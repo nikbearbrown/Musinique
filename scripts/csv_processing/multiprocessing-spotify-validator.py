@@ -229,10 +229,11 @@ def check_spotify_url(page, url):
     
     return (is_playlist, is_profile)
 
-def process_chunk(process_id, chunk_data, output_queue):
+def process_chunk(process_id, chunk_data, output_queue, batch_size=50):
     """
     Process a chunk of URLs in a separate process.
     Each process runs its own browser instance.
+    Sends results in batches to avoid queue overflow.
     """
     print(f"[Process {process_id}] Starting with {len(chunk_data)} URLs")
     
@@ -242,12 +243,12 @@ def process_chunk(process_id, chunk_data, output_queue):
         try:
             # Launch browser for this process
             browser = p.chromium.launch(
-                headless=True,  # Headless mode - no browser window
+                headless=True,
                 args=[
                     '--disable-blink-features=AutomationControlled',
                     '--disable-dev-shm-usage',
                     '--no-sandbox',
-                    '--disable-gpu',  # Better for headless
+                    '--disable-gpu',
                     '--disable-dev-tools',
                 ]
             )
@@ -294,6 +295,12 @@ def process_chunk(process_id, chunk_data, output_queue):
                     status = "✅" if (is_playlist and "valid" in is_playlist) or (is_profile and "valid" in is_profile) else "❌"
                     print(f"[Process {process_id}] {status} Row {row_idx + 1}: playlist=[{is_playlist}] profile=[{is_profile}]")
                     
+                    # Send batch to queue and clear results buffer
+                    if len(results) >= batch_size:
+                        output_queue.put((process_id, results.copy()))
+                        print(f"[Process {process_id}] 📤 Sent batch of {len(results)} results to queue")
+                        results = []
+                    
                     # Random delay
                     delay = random.uniform(2.0, 5.0)
                     time.sleep(delay)
@@ -311,25 +318,37 @@ def process_chunk(process_id, chunk_data, output_queue):
                         'is_profile': ''
                     }
                     results.append(result)
+                    
+                    # Send batch if reached batch size
+                    if len(results) >= batch_size:
+                        output_queue.put((process_id, results.copy()))
+                        print(f"[Process {process_id}] 📤 Sent batch of {len(results)} results to queue")
+                        results = []
             
             browser.close()
             
         except Exception as e:
             print(f"[Process {process_id}] ✗ Error: {str(e)}")
+            # Make sure to still return results for processed URLs even if error occurs
     
-    # Send results back through queue
-    output_queue.put((process_id, results))
-    print(f"[Process {process_id}] ✓ Completed! Processed {len(results)} URLs")
+    # Send any remaining results
+    if results:
+        output_queue.put((process_id, results))
+        print(f"[Process {process_id}] 📤 Sent final batch of {len(results)} results to queue")
+    
+    print(f"[Process {process_id}] ✓ Completed!")
 
-def process_excel_file_parallel(input_file, output_file, num_processes=4):
+def process_excel_file_parallel(input_file, output_file, num_processes=4, save_interval=100):
     """
     Process CSV file with multiple parallel processes.
+    Saves results incrementally every save_interval rows.
     """
     print(f"{'='*70}")
     print(f"PARALLEL SPOTIFY URL VALIDATOR")
     print(f"{'='*70}")
     print(f"Reading file: {input_file}")
-    print(f"Number of parallel processes: {num_processes}\n")
+    print(f"Number of parallel processes: {num_processes}")
+    print(f"Save interval: Every {save_interval} rows\n")
     
     # Read CSV
     df = pd.read_csv(input_file)
@@ -338,12 +357,20 @@ def process_excel_file_parallel(input_file, output_file, num_processes=4):
     print(f"Total URLs to process: {total_rows}")
     print(f"{'='*70}\n")
     
-    # Initialize result columns
-    df['is_playlist'] = ""
-    df['is_profile'] = ""
+    # Initialize result columns if they don't exist
+    if 'is_playlist' not in df.columns:
+        df['is_playlist'] = ""
+    if 'is_profile' not in df.columns:
+        df['is_profile'] = ""
+    
+    # Create output directory if it doesn't exist
+    output_dir = os.path.dirname(output_file)
+    if output_dir and not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Created output directory: {output_dir}\n")
     
     # Split data into chunks for each process
-    chunk_size = (total_rows + num_processes - 1) // num_processes  # Ceiling division
+    chunk_size = (total_rows + num_processes - 1) // num_processes
     chunks = []
     
     for i in range(num_processes):
@@ -372,31 +399,117 @@ def process_excel_file_parallel(input_file, output_file, num_processes=4):
         p.start()
         processes.append(p)
     
+    # Collect results continuously and save periodically
+    all_results = {}
+    results_since_last_save = 0
+    total_collected = 0
+    
+    print(f"\n{'='*70}")
+    print("Collecting and saving results...")
+    print(f"{'='*70}\n")
+    
+    # Monitor queue while processes are running
+    processes_finished = 0
+    while processes_finished < len(processes):
+        # Check if any process has finished
+        for p in processes:
+            if not p.is_alive() and p not in [proc for proc in processes if hasattr(proc, '_finished')]:
+                processes_finished += 1
+                setattr(p, '_finished', True)
+        
+        # Collect available results from queue
+        while not output_queue.empty():
+            try:
+                process_id, results = output_queue.get(timeout=1)
+                print(f"📥 Received {len(results)} results from Process {process_id}")
+                
+                for result in results:
+                    all_results[result['row_idx']] = result
+                    results_since_last_save += 1
+                    total_collected += 1
+                
+                # Save if we've collected enough results
+                if results_since_last_save >= save_interval:
+                    print(f"\n💾 Saving checkpoint... ({total_collected} results collected so far)")
+                    
+                    # Update dataframe with all collected results
+                    for row_idx, result in all_results.items():
+                        df.loc[row_idx, 'is_playlist'] = result['is_playlist']
+                        df.loc[row_idx, 'is_profile'] = result['is_profile']
+                    
+                    # Save to file
+                    try:
+                        df.to_csv(output_file, index=False, encoding='utf-8')
+                        print(f"✅ Checkpoint saved! Total results: {total_collected}/{total_rows}")
+                        results_since_last_save = 0
+                    except Exception as e:
+                        print(f"⚠️ Error saving checkpoint: {str(e)}")
+                    
+                    print(f"{'='*70}\n")
+            
+            except:
+                break
+        
+        # Small sleep to prevent busy waiting
+        time.sleep(0.5)
+    
     # Wait for all processes to complete
     for p in processes:
         p.join()
     
-    # Collect results from queue
+    # Collect any remaining results
     print(f"\n{'='*70}")
-    print("Collecting results from all processes...")
+    print("Collecting final results...")
     print(f"{'='*70}\n")
     
-    all_results = {}
     while not output_queue.empty():
-        process_id, results = output_queue.get()
-        print(f"Received {len(results)} results from Process {process_id}")
-        for result in results:
-            all_results[result['row_idx']] = result
+        try:
+            process_id, results = output_queue.get(timeout=1)
+            print(f"📥 Received {len(results)} final results from Process {process_id}")
+            for result in results:
+                all_results[result['row_idx']] = result
+                total_collected += 1
+        except:
+            break
     
-    # Update dataframe with results
-    for row_idx, result in all_results.items():
-        df.at[row_idx, 'is_playlist'] = result['is_playlist']
-        df.at[row_idx, 'is_profile'] = result['is_profile']
+    print(f"\nTotal results collected: {total_collected}")
     
-    # Save results
+    # Final update and save
     print(f"\n{'='*70}")
-    print(f"💾 Saving results to: {output_file}")
-    df.to_csv(output_file, index=False)
+    print(f"💾 Saving final results to: {output_file}")
+    
+    # Update dataframe with all results
+    for row_idx, result in all_results.items():
+        df.loc[row_idx, 'is_playlist'] = result['is_playlist']
+        df.loc[row_idx, 'is_profile'] = result['is_profile']
+    
+    try:
+        df.to_csv(output_file, index=False, encoding='utf-8')
+        print(f"✅ File saved successfully!")
+        
+        # Verify the file was created and has content
+        if os.path.exists(output_file):
+            file_size = os.path.getsize(output_file)
+            print(f"File size: {file_size:,} bytes")
+            
+            # Read back and verify
+            verify_df = pd.read_csv(output_file)
+            print(f"Verified rows in saved file: {len(verify_df)}")
+            
+            # Check how many rows have results
+            playlist_results = verify_df['is_playlist'].notna() & (verify_df['is_playlist'] != '')
+            profile_results = verify_df['is_profile'].notna() & (verify_df['is_profile'] != '')
+            print(f"Rows with playlist results: {playlist_results.sum()}")
+            print(f"Rows with profile results: {profile_results.sum()}")
+        else:
+            print(f"⚠️ Warning: Output file was not created!")
+            
+    except Exception as e:
+        print(f"❌ Error saving file: {str(e)}")
+        # Try saving to a backup location
+        backup_file = "spotify_data_validated_backup.csv"
+        print(f"Attempting to save to backup location: {backup_file}")
+        df.to_csv(backup_file, index=False, encoding='utf-8')
     
     end_time = datetime.now()
     duration = end_time - start_time
@@ -406,19 +519,23 @@ def process_excel_file_parallel(input_file, output_file, num_processes=4):
     print(f"✅ COMPLETED!")
     print(f"{'='*70}")
     print(f"Total URLs processed: {total_rows}")
+    print(f"Results collected: {len(all_results)}")
     print(f"Time taken: {duration}")
     print(f"Average time per URL: {duration.total_seconds() / total_rows:.2f}s")
     print(f"Output file: {output_file}")
     print(f"{'='*70}")
 
 if __name__ == "__main__":
-    INPUT_FILE = "spotify_data.csv"
-    OUTPUT_FILE = "spotify_data_validated.csv"
-    NUM_PROCESSES = 4  # Adjust based on your CPU cores
+    INPUT_FILE = "spotify_data_complete.csv"
+    OUTPUT_FILE = "processed/spotify_data_validated.csv"
+    NUM_PROCESSES = 16  # Adjust based on your CPU cores
+    SAVE_INTERVAL = 100  # Save after every 100 results collected
     
-    # Important: On macOS, you may need to set this
-    # to avoid issues with multiprocessing
+    # Set multiprocessing start method
     import multiprocessing
-    multiprocessing.set_start_method('spawn', force=True)
+    try:
+        multiprocessing.set_start_method('spawn', force=True)
+    except RuntimeError:
+        pass
     
-    process_excel_file_parallel(INPUT_FILE, OUTPUT_FILE, NUM_PROCESSES)
+    process_excel_file_parallel(INPUT_FILE, OUTPUT_FILE, NUM_PROCESSES, SAVE_INTERVAL)
