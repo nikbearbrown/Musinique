@@ -1,0 +1,7 @@
+pandas
+requests
+spotipy
+nest-asyncio
+aiohttp
+python-dotenv
+
