@@ -1,6 +1,11 @@
-# Spotify URL Validator (11/05/2025)
+# Spotify URL Validator
 
-A Python script that validates Spotify playlist and profile URLs from a CSV file using Playwright web automation with anti-bot detection measures.
+Python scripts that validate Spotify playlist and profile URLs from a CSV file using Playwright web automation with anti-bot detection measures.
+
+## Available Scripts
+
+- **`spotify_validator.py`** - Single-threaded validator (slower, sequential processing)
+- **`multiprocessing-spotify-validator.py`** - Multi-threaded validator (faster, parallel processing) ⚡
 
 ## Features
 
@@ -10,6 +15,7 @@ A Python script that validates Spotify playlist and profile URLs from a CSV file
 - ✅ Anti-bot detection measures
 - ✅ Processes CSV files with multiple columns
 - ✅ Adds validation results without modifying existing data
+- ✅ Multi-process support for faster validation (multiprocessing version)
 
 ## Requirements
 
@@ -74,17 +80,36 @@ John,john@example.com,https://open.spotify.com/user/johnsmith,2.5K
 
 ### 2. Update Script Configuration
 
-Edit `spotify_validator.py` and update the file paths at the bottom:
+**For Single-threaded Version (`spotify_validator.py`):**
+
+Edit the file paths at the bottom:
 
 ```python
 INPUT_FILE = "spotify_data.csv"              # Your input file
 OUTPUT_FILE = "spotify_data_validated.csv"   # Output file name
 ```
 
+**For Multiprocessing Version (`multiprocessing-spotify-validator.py`):**
+
+Edit the configuration at the bottom:
+
+```python
+INPUT_FILE = "spotify_data_complete.csv"      # Your input file
+OUTPUT_FILE = "processed/spotify_data_validated.csv"  # Output file name
+NUM_PROCESSES = 16                            # Number of parallel processes (adjust based on CPU cores)
+SAVE_INTERVAL = 100                           # Save progress after every N results
+```
+
 ### 3. Run the Script
 
+**Single-threaded (slower, more stable):**
 ```bash
 python spotify_validator.py
+```
+
+**Multiprocessing (faster, recommended for large datasets):**
+```bash
+python multiprocessing-spotify-validator.py
 ```
 
 ### 4. View Results
@@ -151,6 +176,38 @@ If Spotify blocks your requests:
 
 ## Configuration Options
 
+### Choosing Between Scripts
+
+**Use `spotify_validator.py` when:**
+- Processing small datasets (< 100 URLs)
+- You want to see the browser window (debugging)
+- System has limited CPU cores
+- Stability is more important than speed
+
+**Use `multiprocessing-spotify-validator.py` when:**
+- Processing large datasets (hundreds or thousands of URLs)
+- Speed is important
+- System has multiple CPU cores (4+)
+- You want automatic progress saving
+
+### Multiprocessing Configuration
+
+Adjust these settings in `multiprocessing-spotify-validator.py`:
+
+```python
+NUM_PROCESSES = 16      # Set to your CPU core count (use 1-2x cores)
+SAVE_INTERVAL = 100     # How often to save progress (lower = more frequent saves)
+```
+
+To check your CPU cores:
+```bash
+# macOS/Linux
+sysctl -n hw.ncpu
+
+# Python
+python -c "import os; print(os.cpu_count())"
+```
+
 ### Headless Mode
 
 To run browser invisibly (faster but less human-like), change in script:
@@ -168,18 +225,48 @@ Modify timing in the script:
 ## Project Structure
 
 ```
-spotify-validator/
-├── venv/                          # Virtual environment (generated)
-├── requirements.txt               # Python dependencies
-├── spotify_validator.py           # Main script
-├── spotify_data.csv              # Your input file
-├── spotify_data_validated.csv    # Output file (generated)
-└── README.md                      # This file
+csv_processing/
+├── venv/                                      # Virtual environment (generated)
+├── requirements.txt                           # Python dependencies
+├── spotify_validator.py                       # Single-threaded validator
+├── multiprocessing-spotify-validator.py       # Multi-process validator ⚡
+├── spotify_data.csv                          # Your input file
+├── spotify_data_complete.csv                 # Large input file example
+├── spotify_data_validated.csv                # Output file (generated)
+├── processed/                                # Validated output directory
+│   └── spotify_data_validated.csv           # Multiprocessing output
+├── change-log.md                             # Version history
+└── README.MD                                 # This file
 ```
+
+## Performance Comparison
+
+| Script | Processing Speed | CPU Usage | Memory | Best For |
+|--------|-----------------|-----------|---------|----------|
+| `spotify_validator.py` | ~5-10 sec/URL | Low (1 core) | Low | Small datasets |
+| `multiprocessing-spotify-validator.py` | ~1-2 sec/URL | High (multi-core) | Medium | Large datasets |
+
+**Example:** Processing 1000 URLs
+- Single-threaded: ~2-3 hours
+- Multiprocessing (16 cores): ~20-30 minutes
 
 ## Notes
 
-- The script runs in **non-headless mode** by default (you'll see the browser)
-- Processing time: ~5-10 seconds per URL (due to human-like delays)
-- Large CSV files will take considerable time
-- Script preserves all original data - only adds new columns
+- Both scripts run in **non-headless mode** by default (you'll see the browser)
+- Single-threaded: ~5-10 seconds per URL (due to human-like delays)
+- Multiprocessing: ~1-2 seconds per URL (parallel processing)
+- Large CSV files will take considerable time (use multiprocessing version for speed)
+- Scripts preserve all original data - only add new columns
+- Multiprocessing version includes automatic progress saving
+- Output is saved to `processed/` directory when using multiprocessing script
+
+## Multiprocessing Features
+
+The `multiprocessing-spotify-validator.py` script includes:
+
+- **Parallel Processing**: Processes multiple URLs simultaneously using multiple CPU cores
+- **Progress Tracking**: Real-time progress updates with ETA
+- **Auto-Save**: Periodically saves results (configurable interval)
+- **Error Recovery**: Continues processing even if individual URLs fail
+- **Statistics**: Detailed completion stats (total time, average time per URL)
+- **Output Directory**: Automatically saves to `processed/` folder
