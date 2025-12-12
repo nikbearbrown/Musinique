@@ -1,6 +1,9 @@
 # Processed Data
 
 This directory contains validated and processed Spotify data files.
+- spotify_data_validated.csv - complete file after processing
+- spotify_valid_playlist.csv - filtered data with only valid playlists
+- spotify_valid_playlist.csv - filtered data with only valid profiles
 
 ## Contents
 
