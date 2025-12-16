@@ -2,7 +2,7 @@ from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, START, END
 from tools import google_search, scrape_page, filter_search_results
 from state import CuratorState, create_initial_state
-from prompts import AGENT_1_PROMPT, create_prompt, AGENT_PROMPT
+from prompts import AGENT_PROMPT
 from pydantic import BaseModel
 from typing import Optional, List
 from pprint import pprint
