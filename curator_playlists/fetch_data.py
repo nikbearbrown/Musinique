@@ -1,7 +1,7 @@
 import time
 import pandas as pd
 from collections import Counter
-from curator_playlists.utils import get_json
+from utils import get_json
 
 # Fetch all playlists for this curator
 def fetch_curator_playlists(user_id, TARGET_CURATOR_NAME):
@@ -42,7 +42,7 @@ def fetch_artist_batch(batch):
 
 
 # Build playlist metadata dataframe (with followers, description, image, total_tracks)
-def playlists_metadata(raw_playlists):
+def playlists_metadata(raw_playlists, TARGET_CURATOR_NAME, curator_url):
     playlist_meta_rows = []
     for idx, p in enumerate(raw_playlists, start=1):
         pid = p["id"]
@@ -162,7 +162,7 @@ def tracks_data(df_curator_playlists):
 
 
 # FETCH ARTIST METADATA
-def artists_metadata():
+def artists_metadata(df_tracks):
     df_art_ids = (
         df_tracks[["track_id", "artist_ids"]]
         .explode("artist_ids")
@@ -199,7 +199,7 @@ def artists_metadata():
     return pd.DataFrame(artist_rows).drop_duplicates(subset=["artist_id"]).reset_index(drop=True)
 
 # Build dataset
-def build_final_dataset(df_playlist_tracks, df_tracks, df_artists):
+def build_final_dataset(df_playlist_tracks, df_tracks, df_artists, df_curator_playlists, TARGET_CURATOR_NAME, curator_url):
     df_merge = df_playlist_tracks.merge(
         df_tracks[["track_id", "artist_ids"]],
         on="track_id",
@@ -280,9 +280,11 @@ def driver_code(curators):
         print(f"🔗 curator_url: {curator_url}\n")
 
         raw_playlists = fetch_curator_playlists(curator_id, TARGET_CURATOR_NAME)
-        df_curator_playlists = playlists_metadata(raw_playlists)
+        df_curator_playlists = playlists_metadata(raw_playlists, TARGET_CURATOR_NAME, curator_url)
         df_playlist_tracks, df_tracks = tracks_data(df_curator_playlists)
         df_artists = artists_metadata(df_tracks)
-        df_playlist_profiles = build_final_dataset(df_playlist_tracks, df_tracks, df_artists)
-        df_playlist_profiles.to_csv(f'curator_playlists/data/{TARGET_CURATOR_NAME}.csv', index=False)
+        df_playlist_profiles = build_final_dataset(df_playlist_tracks, df_tracks, df_artists, df_curator_playlists,
+                                                   TARGET_CURATOR_NAME, curator_url)
+        
+        df_playlist_profiles.to_csv(f'data/{TARGET_CURATOR_NAME}.csv', index=False)
 
