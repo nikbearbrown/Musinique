@@ -11,6 +11,7 @@ from langchain_core.messages import HumanMessage, ToolMessage, SystemMessage
 import os 
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
+import pandas as pd 
 
 
 os.environ['LANGCHAIN_TRACING_V2'] = "true"
@@ -171,6 +172,9 @@ for curator in curators:
         'submission_form': final_state['submission_form'],
         'any_other_handle': final_state['any_other_handle']
     })
+
+df = pd.DataFrame(data)
+df.to_csv('data/curator_metadata.csv', index=False)
 
 pprint(data)
 
