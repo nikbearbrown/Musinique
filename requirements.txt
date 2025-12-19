@@ -1,0 +1,9 @@
+requests
+dotenv
+bs4
+langgraph
+langchain
+langchain-groq
+langchain_core
+langchain_google_genai
+pandas

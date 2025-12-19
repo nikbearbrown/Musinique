@@ -42,5 +42,8 @@
 
 *.venv
 .env
+myenv
+curator_enrichment/__pycache__
+.vscode/
 *.DS_Store
 __pycache__/
