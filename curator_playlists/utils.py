@@ -3,6 +3,7 @@ import random
 import requests
 from config import CLIENT_ID, CLIENT_SECRET, MAX_RETRIES
 import ast 
+import math
 
 # authentication
 def get_access_token():
@@ -87,3 +88,49 @@ def map_playlist_genres(genre_list_raw, mapping_df):
     unmapped = sorted(set(unmapped))
 
     return mapped, unmapped
+
+def genre_breadth_score(n):
+    if n <= 1:
+        return 100
+    if n >= 50:
+        return 0
+    return round(100 * (1 - math.log(n) / math.log(50)), 1)
+
+
+def genre_density_score(total_tracks, primary_genre_diversity):
+    n = max(primary_genre_diversity, 1)
+    density = total_tracks / n
+
+    if density >= 80:
+        return 100
+    if density <= 5:
+        return 0
+
+    return round(100 * (density - 5) / (80 - 5), 1)
+
+
+def artist_focus_score(total_tracks, unique_artists):
+    if total_tracks == 0:
+        return 0
+
+    ratio = unique_artists / total_tracks
+
+    if ratio <= 0.3:
+        return 100
+    if ratio >= 1.0:
+        return 0
+
+    return round(100 * (1 - (ratio - 0.3) / (1.0 - 0.3)), 1)
+
+
+def musinique_focus_score(row):
+    s1 = genre_breadth_score(row["primary_genre_diversity"])
+    s2 = genre_density_score(row["total_tracks"], row["primary_genre_diversity"])
+    s3 = artist_focus_score(row["total_tracks"], row["unique_artists"])
+
+    return round(
+        0.45 * s1 +   # genre entropy proxy
+        0.30 * s2 +   # density
+        0.25 * s3,   # artist coherence
+        1
+    )

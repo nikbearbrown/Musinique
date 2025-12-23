@@ -1,10 +1,10 @@
 import time
 import pandas as pd
 from collections import Counter
-from utils import get_json
+from utils import get_json, get_access_token
 
 # Fetch all playlists for this curator
-def fetch_curator_playlists(user_id, TARGET_CURATOR_NAME):
+def fetch_curator_playlists(user_id, TARGET_CURATOR_NAME):    
     playlists = []
     offset = 0
     limit = 50
@@ -116,6 +116,8 @@ def tracks_data(df_curator_playlists):
         print(f"[{idx+1}/{len(df_curator_playlists)}] Playlist: {pname} ({pid})")
 
         items = fetch_all_tracks_for_playlist(pid)
+        if not items:
+            continue
 
         for pos, item in enumerate(items):
             track = item.get("track")
@@ -155,8 +157,9 @@ def tracks_data(df_curator_playlists):
         time.sleep(0.3)
 
     df_playlist_tracks = pd.DataFrame(playlist_track_rows)
-    df_tracks_raw = pd.DataFrame(track_rows)
-    df_tracks = df_tracks_raw.drop_duplicates(subset=["track_id"]).reset_index(drop=True)
+    df_tracks = pd.DataFrame(track_rows)
+    if df_tracks.empty:
+        df_tracks = df_tracks.drop_duplicates(subset=["track_id"]).reset_index(drop=True)
 
     return df_playlist_tracks, df_tracks
 
@@ -280,8 +283,19 @@ def driver_code(curators):
         print(f"🔗 curator_url: {curator_url}\n")
 
         raw_playlists = fetch_curator_playlists(curator_id, TARGET_CURATOR_NAME)
+        
+        # Ignore the curators who does not have any playlists or deleted them 
+        if not raw_playlists:
+            print('Curator does not have any playlist')
+            continue
+
         df_curator_playlists = playlists_metadata(raw_playlists, TARGET_CURATOR_NAME, curator_url)
         df_playlist_tracks, df_tracks = tracks_data(df_curator_playlists)
+        
+        if df_tracks.empty or df_playlist_tracks.empty:
+            print('Curator does not have any tracks in their playlist!')
+            continue
+
         df_artists = artists_metadata(df_tracks)
         df_playlist_profiles = build_final_dataset(df_playlist_tracks, df_tracks, df_artists, df_curator_playlists,
                                                    TARGET_CURATOR_NAME, curator_url)

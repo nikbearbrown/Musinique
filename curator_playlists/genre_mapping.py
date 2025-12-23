@@ -7,7 +7,7 @@ def mapping_genres(mapping_df, df):
     unmapped_list = []
     for idx, row in df.iterrows():
         raw_genres = row["playlist_genres"]
-        mapped, unmapped = map_playlist_genres(raw_genres)
+        mapped, unmapped = map_playlist_genres(raw_genres, mapping_df=mapping_df)
 
         mapped_list.append(mapped)
         unmapped_list.append(unmapped)
