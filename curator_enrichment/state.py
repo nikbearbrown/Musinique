@@ -11,7 +11,8 @@ class CuratorState(TypedDict):
     submission_form: Optional[str]
     any_other_handle: Optional[List[str]]
     needs_scraping: Optional[List[str]]
-
+    potiential_website: Optional[str]
+    
     scraped_urls: Optional[List[str]]
     searched_handles: Optional[List[str]]
     search_count: int
@@ -29,12 +30,14 @@ def create_initial_state(curator_name: str, curator_spotify_url: str) -> Curator
         "facebook": None,
         "submission_form": None,
         "any_other_handle": None,
+        "potiential_website": None,
+        
         "needs_scraping": [],
         "scraped_urls": [],
         "search_count": 0,
         "scrape_count": 0,
         "messages": [],
         "searched_handles": [],
-        "missing": []
+        "missing": [],
 
     }

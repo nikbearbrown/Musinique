@@ -5,7 +5,6 @@ from config import CLIENT_ID, CLIENT_SECRET, MAX_RETRIES
 import ast 
 import math
 
-
 # authentication
 def get_access_token():
     resp = requests.post(
