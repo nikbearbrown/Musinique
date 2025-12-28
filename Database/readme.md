@@ -1,3 +1,22 @@
+## Combined Vote Calculation
+
+Each track is scored using a **Combined Vote** to capture both its **genre diversity** and **curator usage**.
+
+### Inputs
+
+* **Genre Appearance**
+  Each track receives one vote for every genre associated with its artist(s). Multiple genres per artist mean multiple genre votes per track.
+
+* **Playlist Appearance**
+  Counts **each playlist** in which a track appears, even if multiple playlists belong to the same curator.
+  Example: If a song appears in 10 playlists from one curator, the playlist appearance vote is **10**.
+
+### Formula
+
+```
+combined_vote = genre_appearance × playlist_appearance
+```
+
 ## Musinique Focus Score Calculation
 
 The **Musinique Focus Score** (0-100) measures how niche/focused a playlist is using three components:
