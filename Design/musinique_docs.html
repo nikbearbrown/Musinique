@@ -1,0 +1,2959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Musinique Platform - Internal Technical Documentation</title>
+  <style>
+    @media print {
+      .page-break { page-break-before: always; }
+      body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .no-print { display: none; }
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      color: #1a1a2e;
+      background: #fff;
+      font-size: 10pt;
+    }
+    
+    .cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a0033 0%, #2d0052 50%, #4a0072 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 40px;
+    }
+    
+    .cover h1 {
+      font-size: 36pt;
+      font-weight: 700;
+      margin-bottom: 10px;
+      font-family: 'Consolas', monospace;
+    }
+    
+    .cover .subtitle {
+      font-size: 14pt;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+    
+    .cover .badge {
+      background: #9333ea;
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 10pt;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+    
+    .cover-meta {
+      font-size: 10pt;
+      opacity: 0.7;
+      margin-top: 60px;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 40px;
+    }
+    
+    h1.section-title {
+      font-size: 20pt;
+      color: #1a0033;
+      border-bottom: 3px solid #9333ea;
+      padding-bottom: 8px;
+      margin: 35px 0 20px 0;
+      font-family: 'Consolas', monospace;
+    }
+    
+    h2 {
+      font-size: 14pt;
+      color: #2d0052;
+      margin: 25px 0 12px 0;
+      border-left: 4px solid #9333ea;
+      padding-left: 12px;
+    }
+    
+    h3 {
+      font-size: 12pt;
+      color: #4a0072;
+      margin: 18px 0 10px 0;
+    }
+    
+    h4 {
+      font-size: 10pt;
+      color: #555;
+      margin: 12px 0 8px 0;
+      font-weight: 600;
+    }
+    
+    p { margin: 10px 0; }
+    
+    code {
+      background: #f4f4f8;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 9pt;
+      color: #9333ea;
+    }
+    
+    pre {
+      background: #1a1a2e;
+      color: #a8d8a8;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 9pt;
+      margin: 12px 0;
+      font-family: 'Consolas', monospace;
+    }
+    
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 9pt;
+    }
+    
+    th {
+      background: #2d0052;
+      color: white;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      vertical-align: top;
+    }
+    
+    tr:nth-child(even) { background: #f8f8fc; }
+    
+    .alert {
+      padding: 15px 18px;
+      border-radius: 6px;
+      margin: 15px 0;
+    }
+    
+    .alert-danger {
+      background: #fdf2f2;
+      border-left: 4px solid #dc2626;
+      color: #9b2c2c;
+    }
+    
+    .alert-warning {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      color: #92400e;
+    }
+    
+    .alert-info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    .alert-success {
+      background: #f0fdf4;
+      border-left: 4px solid #22c55e;
+      color: #166534;
+    }
+    
+    .alert strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 18px;
+      margin: 15px 0;
+      background: #fafafa;
+    }
+    
+    .card-header {
+      font-weight: 600;
+      color: #1a0033;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .file-path {
+      background: #2d0052;
+      color: #ffd700;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-family: 'Consolas', monospace;
+      font-size: 9pt;
+    }
+    
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 8pt;
+      font-weight: 600;
+      margin: 2px;
+    }
+    
+    .tag-enrichment { background: #dbeafe; color: #1e40af; }
+    .tag-validation { background: #dcfce7; color: #166534; }
+    .tag-collection { background: #fef3c7; color: #92400e; }
+    .tag-scoring { background: #fce7f3; color: #9d174d; }
+    .tag-all { background: #f3e8ff; color: #7c3aed; }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 8pt;
+      font-weight: 600;
+    }
+    
+    .status-implemented { background: #dcfce7; color: #166534; }
+    .status-partial { background: #fef3c7; color: #92400e; }
+    .status-missing { background: #fef2f2; color: #991b1b; }
+    .status-todo { background: #fce7f3; color: #9d174d; }
+    
+    .priority-critical { color: #dc2626; font-weight: bold; }
+    .priority-high { color: #ea580c; font-weight: bold; }
+    .priority-medium { color: #ca8a04; }
+    .priority-low { color: #65a30d; }
+    
+    ul, ol { margin: 10px 0 10px 20px; }
+    li { margin: 5px 0; }
+    
+    .toc {
+      background: #f8f8fc;
+      padding: 25px;
+      border-radius: 8px;
+      margin: 20px 0;
+      columns: 2;
+      column-gap: 30px;
+    }
+    
+    .toc-item {
+      padding: 4px 0;
+      break-inside: avoid;
+    }
+    
+    .toc-section {
+      font-weight: 600;
+      color: #1a0033;
+      margin-top: 10px;
+    }
+    
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .three-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .comparison-matrix td:first-child {
+      font-weight: 600;
+      background: #f8f8fc;
+    }
+    
+    .check { color: #22c55e; }
+    .cross { color: #ef4444; }
+    .partial { color: #f59e0b; }
+    
+    .flow-box {
+      background: #f8f8fc;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      margin: 5px 0;
+    }
+    
+    .flow-arrow {
+      text-align: center;
+      color: #666;
+      font-size: 16pt;
+    }
+    
+    .env-var {
+      font-family: 'Consolas', monospace;
+      background: #2d0052;
+      color: #a8d8a8;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    
+    .action-item {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-left: 4px solid #9333ea;
+      padding: 12px 15px;
+      margin: 10px 0;
+      border-radius: 0 6px 6px 0;
+    }
+    
+    .action-item.critical { border-left-color: #dc2626; }
+    .action-item.high { border-left-color: #ea580c; }
+    .action-item.medium { border-left-color: #ca8a04; }
+    .action-item.low { border-left-color: #65a30d; }
+    
+    footer {
+      text-align: center;
+      padding: 30px;
+      background: #1a0033;
+      color: #888;
+      margin-top: 40px;
+      font-size: 9pt;
+    }
+
+    .formula {
+      background: #f9f9fc;
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 3px solid #9333ea;
+      font-family: 'Consolas', monospace;
+    }
+  </style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div class="badge">🔒 INTERNAL USE ONLY</div>
+  <h1>MUSINIQUE PLATFORM</h1>
+  <div class="subtitle">Internal Technical Documentation & Engineering Roadmap</div>
+  <p style="max-width: 600px; opacity: 0.8; font-size: 11pt;">
+    Comprehensive technical reference for the Musinique playlist intelligence system including 
+    existing codebase documentation, fraud detection algorithms, data pipeline specifications, 
+    and prioritized development roadmap.
+  </p>
+  <div class="cover-meta">
+    <p>Version 1.0 | February 2026</p>
+    <p>Musinique Engineering Team</p>
+    <p>Classification: Internal / Confidential</p>
+    <p style="margin-top: 10px; font-style: italic;">"Humans make music. Bots check data."</p>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="container page-break">
+  <h1 class="section-title">Table of Contents</h1>
+  
+  <div class="toc">
+    <div class="toc-section">PART I: ARCHITECTURE</div>
+    <div class="toc-item">1. System Overview & Philosophy</div>
+    <div class="toc-item">2. Repository Map</div>
+    <div class="toc-item">3. Data Model & Focus Score</div>
+    <div class="toc-item">4. The Integrity Layer Framework</div>
+    
+    <div class="toc-section">PART II: EXISTING CODE</div>
+    <div class="toc-item">5. Curator Enrichment Agent</div>
+    <div class="toc-item">6. Spotify Validator</div>
+    <div class="toc-item">7. Data Collection Pipeline</div>
+    <div class="toc-item">8. Scoring & Analytics</div>
+    
+    <div class="toc-section">PART III: DATA PIPELINE</div>
+    <div class="toc-item">9. Collection → Validation → Enrichment</div>
+    <div class="toc-item">10. Genre Mapping System</div>
+    <div class="toc-item">11. Focus Score Calculation</div>
+    <div class="toc-item">12. Output Formats</div>
+    
+    <div class="toc-section">PART IV: MISSING COMPONENTS</div>
+    <div class="toc-item">13. Forensic Metrics Suite (TODO)</div>
+    <div class="toc-item">14. Sonic Intelligence Layer (TODO)</div>
+    <div class="toc-item">15. Algorithmic Monitoring (TODO)</div>
+    <div class="toc-item">16. Network Analysis Tools (TODO)</div>
+    
+    <div class="toc-section">PART V: OPERATIONS</div>
+    <div class="toc-item">17. Environment Configuration</div>
+    <div class="toc-item">18. Deployment Workflow</div>
+    <div class="toc-item">19. Known Issues & Limitations</div>
+    
+    <div class="toc-section">PART VI: ROADMAP</div>
+    <div class="toc-item">20. Prioritized Development Tasks</div>
+    <div class="toc-item">21. Research Infrastructure Goals</div>
+    <div class="toc-item">22. Product Strategy</div>
+  </div>
+</div>
+
+<!-- PART I: ARCHITECTURE -->
+<div class="container page-break">
+  <h1 class="section-title">PART I: ARCHITECTURE</h1>
+  
+  <h2>1. System Overview & Philosophy</h2>
+  
+  <div class="card">
+    <div class="card-header">Mission Statement</div>
+    <p>Musinique is a <strong>data-driven "Consumer Reports" framework</strong> for Spotify playlist intelligence and artist submission strategy. The platform treats playlists as technological products subject to objective, standardized auditing—not subjective creative judgment.</p>
+  </div>
+  
+  <h3>1.1 Core Principles</h3>
+  
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">Black Box Testing</div>
+      <p>Every playlister subjected to the same rigorous, data-driven scrutiny regardless of reputation or reach. No special treatment.</p>
+    </div>
+    <div class="card">
+      <div class="card-header">Computational Skepticism</div>
+      <p>Data analysis reveals exploitation patterns invisible to human observation. Evidence over marketing claims.</p>
+    </div>
+  </div>
+  
+  <div class="two-col">
+    <div class="card">
+      <div class="card-header">Algorithmic Identity Protection</div>
+      <p>Every stream is a data point. Bad placements "poison" an artist's algorithmic profile, causing 90% drops in recommendation support.</p>
+    </div>
+    <div class="card">
+      <div class="card-header">Integrity Over Reach</div>
+      <p>A 1,000-follower focused playlist with high Active Listener Ratio outperforms a 50,000-follower bot shell for career growth.</p>
+    </div>
+  </div>
+  
+  <h3>1.2 The Fraud Crisis Context</h3>
+  
+  <table>
+    <tr>
+      <th>Metric</th>
+      <th>Scale</th>
+      <th>Impact</th>
+    </tr>
+    <tr>
+      <td>Annual Royalty Theft</td>
+      <td>$2B - $3B globally</td>
+      <td>Diverted from legitimate artists via pro-rata pool</td>
+    </tr>
+    <tr>
+      <td>Fraudulent Streams (2021)</td>
+      <td>1-3% of all streams</td>
+      <td>Billions of fake streams, hundreds of millions in theft</td>
+    </tr>
+    <tr>
+      <td>Michael Smith Case</td>
+      <td>$10M, 10,000+ bot accounts</td>
+      <td>Blueprint for "volume-based evasion" tactics</td>
+    </tr>
+    <tr>
+      <td>Track Count</td>
+      <td>Hundreds of thousands</td>
+      <td>AI-generated tracks with names like "Zygotic Washstands"</td>
+    </tr>
+  </table>
+  
+  <h2>2. Repository Map</h2>
+  
+  <h3>2.1 Component Inventory</h3>
+  
+  <table>
+    <tr>
+      <th>Component</th>
+      <th>Type</th>
+      <th>Language</th>
+      <th>Primary Function</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td><code>curator_enrichment/</code></td>
+      <td><span class="tag tag-enrichment">Agent</span></td>
+      <td>Python</td>
+      <td>LangGraph agent for curator contact discovery</td>
+      <td><span class="status-implemented">Implemented</span></td>
+    </tr>
+    <tr>
+      <td><code>scripts/csv_processing/</code></td>
+      <td><span class="tag tag-validation">Validator</span></td>
+      <td>Python</td>
+      <td>Playwright-based URL liveness detection</td>
+      <td><span class="status-implemented">Implemented</span></td>
+    </tr>
+    <tr>
+      <td><code>scripts/data_collection/</code></td>
+      <td><span class="tag tag-collection">Collector</span></td>
+      <td>Python</td>
+      <td>Spotify API data ingestion</td>
+      <td><span class="status-implemented">Implemented</span></td>
+    </tr>
+    <tr>
+      <td><code>curator_playlists/</code></td>
+      <td><span class="tag tag-scoring">Analyzer</span></td>
+      <td>Python</td>
+      <td>Focus Score calculation & genre mapping</td>
+      <td><span class="status-implemented">Implemented</span></td>
+    </tr>
+    <tr>
+      <td><code>forensic_metrics/</code></td>
+      <td><span class="tag tag-all">Forensics</span></td>
+      <td>Python</td>
+      <td>Z-score, churn detection, FAL analysis</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+    <tr>
+      <td><code>sonic_intelligence/</code></td>
+      <td><span class="tag tag-all">ML</span></td>
+      <td>Python</td>
+      <td>Genre-space ellipsoid, S-BERT semantic matching</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+  </table>
+  
+  <h3>2.2 System Dependency Graph</h3>
+  
+  <pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                       EXTERNAL SERVICES                          │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌────────────┐  ┌──────────────┐  │
+│  │ Spotify  │  │  SerpAPI │  │   Groq     │  │ Google GenAI │  │
+│  │   API    │  │  Search  │  │  (LLaMA)   │  │   (Gemini)   │  │
+│  └────┬─────┘  └────┬─────┘  └─────┬──────┘  └──────┬───────┘  │
+│       │             │              │                 │          │
+└───────┼─────────────┼──────────────┼─────────────────┼──────────┘
+        │             │              │                 │
+        ▼             ▼              ▼                 ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    DATA COLLECTION LAYER                         │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Spotify API Collector  →  Playlist + Track Metadata     │  │
+│  │  Async Batching (50 playlists/request, 100 tracks/page)  │  │
+│  └───────────────────┬───────────────────────────────────────┘  │
+└──────────────────────┼──────────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   VALIDATION LAYER                               │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Playwright URL Validator (Multi-process)                 │  │
+│  │  • Anti-bot masking (random delays, mouse movements)      │  │
+│  │  • Error detection ("Couldn't find that playlist")        │  │
+│  │  • Parallel execution (16 processes)                      │  │
+│  └───────────────────┬───────────────────────────────────────┘  │
+└──────────────────────┼──────────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  ENRICHMENT LAYER                                │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  LangGraph Curator Research Agent                         │  │
+│  │  • Google Search → Extract → Scrape → Re-search          │  │
+│  │  • Gemini structured extraction                           │  │
+│  │  • Contact discovery (IG, Twitter, FB, forms)            │  │
+│  └───────────────────┬───────────────────────────────────────┘  │
+└──────────────────────┼──────────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    SCORING LAYER                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  Focus Score Calculator                                    │  │
+│  │  • Genre Breadth (45%)                                     │  │
+│  │  • Genre Density (30%)                                     │  │
+│  │  • Artist Focus (25%)                                      │  │
+│  └───────────────────┬───────────────────────────────────────┘  │
+└──────────────────────┼──────────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  OUTPUT / PRODUCT LAYER                          │
+│  ┌─────────────────────┐  ┌────────────────────────────────┐   │
+│  │  CSV Exports        │  │  Gumroad Products              │   │
+│  │  • Playlists.csv    │  │  • Free: 1K playlists (sample) │   │
+│  │  • Playlisters.csv  │  │  • Paid: 5.8K full database    │   │
+│  └─────────────────────┘  └────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+  </pre>
+  
+  <h2>3. Data Model & Focus Score</h2>
+  
+  <h3>3.1 Playlist Data Schema</h3>
+  
+  <pre>
+interface Playlist {
+  // Identifiers
+  playlist_id: string;              // Spotify ID
+  playlist_name: string;
+  playlist_url: string;
+  
+  // Curator Info
+  curator_name: string;
+  curator_url: string;
+  
+  // Metadata
+  followers: number;
+  total_tracks: number;
+  description?: string;
+  image_url?: string;
+  public: boolean;
+  
+  // Analytics
+  unique_artists: number;
+  avg_artist_popularity: number;    // 0-100 Spotify Popularity Score
+  avg_artist_followers: number;
+  
+  // Genre Intelligence
+  primary_genres: string[];         // Mapped parent genres
+  all_genres: string[];            // All Spotify genres found
+  primary_genre_diversity: number;  // Count of unique primary genres
+  all_genre_diversity: number;      // Count of all unique genres
+  
+  // MUSINIQUE METRICS
+  musinique_focus_score: number;    // 0-100 proprietary metric
+  
+  // Validation (from spotify_validator)
+  is_playlist?: "valid playlist" | "invalid playlist";
+  is_profile?: "valid profile link" | "invalid profile link";
+}
+  </pre>
+  
+  <h3>3.2 Curator (Playlister) Data Schema</h3>
+  
+  <pre>
+interface Curator {
+  curator_name: string;
+  spotify_url: string;
+  
+  // Contact Discovery (from curator_enrichment agent)
+  instagram?: string;
+  twitter?: string;
+  facebook?: string;
+  submission_form?: string;
+  potential_website?: string;
+  any_other_handle?: string[];
+  
+  // Aggregate Metrics (calculated from playlists)
+  total_playlists: number;
+  total_reach: number;              // Sum of all playlist followers
+  avg_focus_score: number;          // Average across all playlists
+  primary_genres: string[];         // Most common genres across portfolio
+}
+  </pre>
+  
+  <h3>3.3 Focus Score Formula</h3>
+  
+  <div class="formula">
+    <strong>Focus Score = (0.45 × S₁) + (0.30 × S₂) + (0.25 × S₃)</strong>
+  </div>
+  
+  <h4>Component 1: Genre Breadth Score (S₁) - 45% Weight</h4>
+  <pre>
+def genre_breadth_score(n: int) -> float:
+    """
+    Rewards playlists with fewer primary genres.
+    
+    Args:
+        n: Number of unique primary genres
+        
+    Returns:
+        Score from 0-100
+        
+    Logic:
+        - 1 genre = 100 points (perfectly focused)
+        - 50+ genres = 0 points (unfocused mess)
+        - Logarithmic decay between
+    """
+    if n <= 1:
+        return 100
+    if n >= 50:
+        return 0
+    return round(100 * (1 - math.log(n) / math.log(50)), 1)
+  </pre>
+  
+  <h4>Component 2: Genre Density Score (S₂) - 30% Weight</h4>
+  <pre>
+def genre_density_score(total_tracks: int, genre_count: int) -> float:
+    """
+    Measures average tracks per genre (depth of niche).
+    
+    Args:
+        total_tracks: Total songs in playlist
+        genre_count: Number of unique primary genres
+        
+    Returns:
+        Score from 0-100
+        
+    Logic:
+        - 80+ tracks/genre = 100 points (deep catalog)
+        - 5 tracks/genre = 0 points (shallow)
+        - Linear interpolation between
+    """
+    n = max(genre_count, 1)
+    density = total_tracks / n
+    
+    if density >= 80:
+        return 100
+    if density <= 5:
+        return 0
+    
+    return round(100 * (density - 5) / (80 - 5), 1)
+  </pre>
+  
+  <h4>Component 3: Artist Focus Score (S₃) - 25% Weight</h4>
+  <pre>
+def artist_focus_score(total_tracks: int, unique_artists: int) -> float:
+    """
+    Rewards artist repetition (indicates coherent "sound").
+    
+    Args:
+        total_tracks: Total songs in playlist
+        unique_artists: Count of unique artists
+        
+    Returns:
+        Score from 0-100
+        
+    Logic:
+        - ≤30% unique = 100 points (high repetition = focus)
+        - 100% unique = 0 points (every artist once = random)
+    """
+    if total_tracks == 0:
+        return 0
+    
+    ratio = unique_artists / total_tracks
+    
+    if ratio <= 0.3:
+        return 100
+    if ratio >= 1.0:
+        return 0
+    
+    return round(100 * (1 - (ratio - 0.3) / (1.0 - 0.3)), 1)
+  </pre>
+  
+  <h3>3.4 Score Interpretation</h3>
+  
+  <table>
+    <tr>
+      <th>Score Range</th>
+      <th>Rating</th>
+      <th>Color</th>
+      <th>Interpretation</th>
+    </tr>
+    <tr>
+      <td>85-100</td>
+      <td>Excellent</td>
+      <td style="background: #dcfce7; color: #166534;">Green</td>
+      <td>Highly focused niche. Strategic partner. High ROI expected.</td>
+    </tr>
+    <tr>
+      <td>70-84</td>
+      <td>Very Good</td>
+      <td style="background: #d9f99d; color: #365314;">Lime</td>
+      <td>Solid opportunity. Genre-focused with minor variance.</td>
+    </tr>
+    <tr>
+      <td>55-69</td>
+      <td>Good</td>
+      <td style="background: #fef3c7; color: #92400e;">Yellow</td>
+      <td>Proceed with caution. May have sonic mismatches.</td>
+    </tr>
+    <tr>
+      <td>40-54</td>
+      <td>Fair</td>
+      <td style="background: #fed7aa; color: #9a3412;">Orange</td>
+      <td>Marginal value. Likely inactive or poor alignment.</td>
+    </tr>
+    <tr>
+      <td>&lt;40</td>
+      <td>Poor</td>
+      <td style="background: #fecaca; color: #991b1b;">Red</td>
+      <td>Stay away. High bot risk or "cleaning lady" playlist.</td>
+    </tr>
+  </table>
+  
+  <h2>4. The Integrity Layer Framework</h2>
+  
+  <h3>4.1 Audit Pillars</h3>
+  
+  <table>
+    <tr>
+      <th>Pillar</th>
+      <th>Objective</th>
+      <th>Mechanism</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>Growth Dynamics</td>
+      <td>Verify follower authenticity</td>
+      <td>Z-score analysis, vertical spike detection</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+    <tr>
+      <td>Engagement Efficiency</td>
+      <td>Measure real listener impact</td>
+      <td>Stream-to-Follower ratio, Active Listener Ratio</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+    <tr>
+      <td>Sonic Coherence</td>
+      <td>Ensure vibe alignment</td>
+      <td>Ellipsoid diversity metric in genre-space</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+    <tr>
+      <td>Algorithmic Potential</td>
+      <td>SPS milestone mapping</td>
+      <td>Track 20%/30% thresholds for Discover Weekly</td>
+      <td><span class="status-missing">TODO</span></td>
+    </tr>
+    <tr>
+      <td>Curator Governance</td>
+      <td>Transparency & compliance</td>
+      <td>Digital footprint scraping, "Discovered On" vetting</td>
+      <td><span class="status-partial">Partial</span></td>
+    </tr>
+  </table>
+  
+  <h3>4.2 Bot Detection Indicators</h3>
+  
+  <table>
+    <tr>
+      <th>Indicator</th>
+      <th>Bot Farm Pattern</th>
+      <th>Human Pattern</th>
+    </tr>
+    <tr>
+      <td>Stream-to-Follower</td>
+      <td>&gt;1:1 (10K streams from 5K followers)</td>
+      <td>&lt;1:10 (Followers ≫ Monthly Listeners)</td>
+    </tr>
+    <tr>
+      <td>Weekly Turnover</td>
+      <td>Exact 7-day removals (&gt;50% of content)</td>
+      <td>28+ days organic retention</td>
+    </tr>
+    <tr>
+      <td>Geographic Seeding</td>
+      <td>Spikes from data centers (Ashburn, Chicago)</td>
+      <td>Distributed by actual fanbase</td>
+    </tr>
+    <tr>
+      <td>Engagement Depth</td>
+      <td>Streams with zero saves/follows</td>
+      <td>Streams correlated with saves, FAL movement</td>
+    </tr>
+    <tr>
+      <td>Artist Presence</td>
+      <td>"Digital Ghost" (no website, no tour history)</td>
+      <td>Verifiable real-world footprint</td>
+    </tr>
+  </table>
+</div>
+
+<!-- PART II: EXISTING CODE -->
+<div class="container page-break">
+  <h1 class="section-title">PART II: EXISTING CODE DOCUMENTATION</h1>
+  
+  <h2>5. Curator Enrichment Agent</h2>
+  
+  <h3>5.1 File Structure</h3>
+  <pre>
+curator_enrichment/
+├── agent.py           # LangGraph orchestration
+├── state.py           # CuratorState TypedDict
+├── tools.py           # google_search, scrape_page, filter_search_results
+├── prompts.py         # AGENT_PROMPT template
+└── config.py          # API keys, base URLs
+  </pre>
+  
+  <h3>5.2 State Machine Architecture</h3>
+  <p><span class="file-path">curator_enrichment/agent.py</span></p>
+  
+  <pre>
+# StateGraph Definition
+graph = StateGraph(CuratorState)
+
+# Nodes
+graph.add_node("Initial_Search", initial_search)
+graph.add_node("LLM_extraction", LLM_extraction)
+graph.add_node("Scrape", scrape)
+graph.add_node("Search", search)
+
+# Flow
+START → Initial_Search → LLM_extraction → [router] → {
+    scrape → LLM_extraction (loop)
+    search → LLM_extraction (loop)
+    END
+}
+  </pre>
+  
+  <h3>5.3 CuratorState Schema</h3>
+  <p><span class="file-path">curator_enrichment/state.py</span></p>
+  
+  <pre>
+class CuratorState(TypedDict):
+    # Input
+    curator_name: str
+    spotify_url: str
+    
+    # Extracted Contacts
+    instagram: Optional[str]
+    twitter: Optional[str]
+    facebook: Optional[str]
+    submission_form: Optional[str]
+    potential_website: Optional[str]
+    any_other_handle: Optional[List[str]]
+    
+    # Control Flow
+    needs_scraping: Optional[List[str]]      # URLs to deep-dive
+    scraped_urls: Optional[List[str]]        # Already scraped (prevent loops)
+    searched_handles: Optional[List[str]]    # Already searched platforms
+    missing: Optional[List[str]]             # Handles still needed
+    
+    # Rate Limiting
+    search_count: int                        # Max 2 additional searches
+    scrape_count: int                        # Max 1 scrape
+    
+    # Working Memory
+    messages: Optional[List[str]]            # Current context for LLM
+  </pre>
+  
+  <h3>5.4 Node Implementations</h3>
+  
+  <h4>initial_search Node</h4>
+  <pre>
+def initial_search(state: CuratorState) -> CuratorState:
+    """
+    Entry point: Google search for "curator_name music playlists"
+    
+    Updates:
+        state['messages'] = search results
+    """
+    curator_name = state['curator_name']
+    content = google_search.invoke({
+        "query": f'{curator_name} music playlists'
+    })
+    state['messages'] = content
+    return state
+  </pre>
+  
+  <h4>LLM_extraction Node</h4>
+  <pre>
+def LLM_extraction(state: CuratorState) -> CuratorState:
+    """
+    Uses Gemini 3 Pro to parse search results/scraped content.
+    
+    Model: gemini-3-pro-preview (Vertex AI)
+    Schema: ExtractionSchema (Pydantic)
+    Temperature: 0.0 (deterministic)
+    
+    Logic:
+        1. Formats AGENT_PROMPT with current_state
+        2. Sends messages to Gemini with structured output
+        3. Updates state only if new info is "stronger"
+        4. Populates 'missing' list for next iteration
+    
+    Rate Limit: 2-second sleep before each call
+    """
+    # ... (see code in agent.py for full implementation)
+  </pre>
+  
+  <h4>scrape Node</h4>
+  <pre>
+def scrape(state: CuratorState) -> CuratorState:
+    """
+    Deep-dives into a webpage from needs_scraping queue.
+    
+    Limits: Max 1 scrape per workflow (to prevent infinite loops)
+    Timeout: 8 seconds per request
+    Output: Truncated to 8000 chars to fit LLM context
+    
+    Updates:
+        - state['messages'] = cleaned page text
+        - state['scrape_count'] += 1
+        - Moves URL from needs_scraping to scraped_urls
+    """
+    if not state['needs_scraping'] or state['scrape_count'] > 0:
+        state['needs_scraping'] = []
+        return state
+    
+    cur_url = state['needs_scraping'][-1]
+    content = scrape_page.invoke({'url': cur_url})
+    state['messages'] = [str(content)]
+    state['scrape_count'] += 1
+    state['scraped_urls'].append(state['needs_scraping'].pop())
+    
+    return state
+  </pre>
+  
+  <h4>search Node</h4>
+  <pre>
+def search(state: CuratorState) -> CuratorState:
+    """
+    Targeted search for missing social handles.
+    
+    Limits: Max 2 additional searches
+    
+    Query Construction:
+        - For social: 'site:instagram.com "curator_name"'
+        - For forms: 'curator_name Music submission_form'
+    
+    Updates:
+        - state['messages'] = new search results
+        - state['search_count'] += 1
+        - Marks handle as searched
+    """
+    # ... (see code for full implementation)
+  </pre>
+  
+  <h3>5.5 ExtractionSchema (Pydantic)</h3>
+  <pre>
+class ExtractionSchema(BaseModel):
+    instagram: Optional[str] = None
+    twitter: Optional[str] = None
+    facebook: Optional[str] = None
+    submission_form: Optional[str] = None
+    potential_website: Optional[str] = None
+    other_links: Optional[List[str]] = []
+    needs_scraping: Optional[List[str]] = []
+    
+# Gemini is instructed to return ONLY this schema (no preamble)
+  </pre>
+  
+  <h3>5.6 Router Logic</h3>
+  <pre>
+def router(state: CuratorState) -> str:
+    """
+    Decision tree for next action.
+    
+    Priority:
+        1. If needs_scraping AND scrape_count < 1 → 'scrape'
+        2. Else if missing handles AND search_count < 2 → 'search'
+        3. Else → 'END'
+    """
+    if not state['missing'] and not state['needs_scraping']:
+        return 'END'
+    if state['needs_scraping'] and state['scrape_count'] < 1:
+        return 'scrape'
+    if state['missing'] and state['search_count'] < 2:
+        return 'search'
+    return 'END'
+  </pre>
+  
+  <div class="alert alert-info">
+    <strong>ℹ️ DESIGN NOTE: Lenient Name Matching</strong>
+    The agent is instructed to be "lenient" with name variations:
+    <ul>
+      <li>"BIRP!" = "BIRP" = "BIRP.DJ" = "BIRP.fm"</li>
+      <li>Handles typos, spacing issues, symbol differences</li>
+      <li>Requires music context to confirm identity</li>
+    </ul>
+  </div>
+  
+  <h2>6. Spotify Validator</h2>
+  
+  <h3>6.1 Multi-Process Architecture</h3>
+  <p><span class="file-path">scripts/csv_processing/multiprocessing-spotify-validator.py</span></p>
+  
+  <table>
+    <tr>
+      <th>Aspect</th>
+      <th>Single-Threaded</th>
+      <th>Multi-Process</th>
+    </tr>
+    <tr>
+      <td>Script</td>
+      <td>spotify_validator.py</td>
+      <td>multiprocessing-spotify-validator.py</td>
+    </tr>
+    <tr>
+      <td>Browser Mode</td>
+      <td>Headful (visible)</td>
+      <td>Headless (background)</td>
+    </tr>
+    <tr>
+      <td>Processes</td>
+      <td>1</td>
+      <td>Configurable (default: 16)</td>
+    </tr>
+    <tr>
+      <td>Speed</td>
+      <td>~5-10 sec/URL</td>
+      <td>~1-2 sec/URL</td>
+    </tr>
+    <tr>
+      <td>Use Case</td>
+      <td>Small datasets, debugging</td>
+      <td>Large datasets (&gt;100 URLs)</td>
+    </tr>
+  </table>
+  
+  <h3>6.2 Validation Algorithm</h3>
+  
+  <pre>
+def check_spotify_url(page, url) -> tuple[str, str]:
+    """
+    Validates Spotify playlist/profile URLs using multi-layered detection.
+    
+    Returns:
+        (is_playlist_status, is_profile_status)
+        
+    Detection Layers:
+        1. ERROR PAGE CHECK (Primary)
+           - "Couldn't find that playlist"
+           - "Couldn't find that page"
+           - "Search for something else?"
+           
+        2. REDIRECT CHECK
+           - Redirect to home page = invalid
+           
+        3. CONTENT VALIDATION (playlist)
+           - Track links (>3 required)
+           - Add button
+           - Save count
+           - Description area
+           - Duration info
+           
+        4. CONTENT VALIDATION (profile)
+           - "Public Playlists" section
+           - Follower count
+           - Follow button
+           - Profile indicator
+           - Playlist cards
+    
+    Verdict:
+        - Requires 2+ positive indicators for "valid"
+        - Any error text = immediate "invalid"
+    """
+    # See full implementation in code
+  </pre>
+  
+  <h3>6.3 Anti-Bot Measures</h3>
+  
+  <pre>
+# Human-like behavior simulation
+def human_like_mouse_movement(page):
+    for _ in range(random.randint(1, 3)):
+        x = random.randint(100, 800)
+        y = random.randint(100, 600)
+        page.mouse.move(x, y)
+        time.sleep(random.uniform(0.1, 0.3))
+
+# Configuration
+browser = p.chromium.launch(
+    headless=True,
+    args=[
+        '--disable-blink-features=AutomationControlled',
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+        '--disable-gpu',
+    ]
+)
+
+context = browser.new_context(
+    user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)...',
+    locale='en-US',
+    timezone_id='America/New_York'
+)
+
+# Timing
+time.sleep(random.uniform(5.0, 7.0))  # Wait for invalid pages
+delay = random.uniform(2.0, 5.0)       # Between requests
+break_time = random.uniform(10.0, 20.0) # Every 10 URLs
+  </pre>
+  
+  <h2>7. Data Collection Pipeline</h2>
+  
+  <h3>7.1 Spotify API Collection</h3>
+  <p><span class="file-path">scripts/data_collection/data_collection.py</span></p>
+  
+  <pre>
+# Keyword-based search
+KEYWORDS = [
+    "indie", "indie pop", "indie rock", "indie folk",
+    "bedroom pop", "lofi", "unsigned artist", "emerging artist"
+]
+
+# Rate limiting
+REQUEST_DELAY = 0.15  # seconds between requests
+MAX_PLAYLISTS_PER_KEYWORD = 1000
+
+# Async batch fetching
+async def fetch_all_playlists(playlist_ids):
+    """
+    Fetches detailed playlist info asynchronously.
+    
+    Concurrency: Uses aiohttp for parallel requests
+    Batch Size: Processes all IDs simultaneously
+    
+    Returns:
+        List of playlist details (followers, description, tracks, etc.)
+    """
+    headers = get_auth_headers()
+    async with aiohttp.ClientSession() as session:
+        tasks = [fetch_playlist(session, pid, headers) 
+                 for pid in playlist_ids]
+        return await asyncio.gather(*tasks)
+  </pre>
+  
+  <h3>7.2 Curator-Specific Pipeline</h3>
+  <p><span class="file-path">curator_playlists/fetch_data.py</span></p>
+  
+  <pre>
+def driver_code(curators):
+    """
+    Main workflow for deep curator analysis.
+    
+    Steps for each curator:
+        1. fetch_curator_playlists: Get all playlists via pagination
+        2. playlists_metadata: Fetch followers, description, etc.
+        3. tracks_data: Get ALL tracks from ALL playlists
+        4. artists_metadata: Batch fetch artist details (50/request)
+        5. build_final_dataset: Aggregate into playlist profiles
+        6. Save: Individual CSV per curator
+    
+    Data Points Collected:
+        - Playlist: followers, total_tracks, description
+        - Tracks: name, popularity, album, artists
+        - Artists: name, followers, popularity, GENRES
+    """
+    for curator in curators:
+        curator_id = extract_id_from_url(curator['curator_url'])
+        
+        raw_playlists = fetch_curator_playlists(curator_id, curator['curator_name'])
+        if not raw_playlists:
+            continue  # Skip empty curators
+            
+        # ... (full pipeline - see code)
+        
+        df_playlist_profiles.to_csv(f'data/{curator_name}.csv', index=False)
+  </pre>
+  
+  <h3>5.3 Authentication & Rate Limiting</h3>
+  <p><span class="file-path">curator_playlists/utils.py</span></p>
+  
+  <pre>
+def get_json(url, params=None, max_retries=7):
+    """
+    Robust Spotify API client with exponential backoff.
+    
+    Handles:
+        - 429 Too Many Requests: Respects Retry-After header
+        - 401 Unauthorized: Auto-refreshes access token
+        - Network errors: Exponential backoff (1.5^attempt)
+        
+    Global State:
+        Updates 'access_token' and 'headers' on 401
+    """
+    global access_token, headers
+    
+    for attempt in range(max_retries):
+        resp = requests.get(url, headers=headers, params=params)
+        
+        if resp.status_code == 429:
+            retry_after = int(resp.headers.get("Retry-After", "3"))
+            wait = retry_after + random.uniform(0.5, 2.0)
+            time.sleep(wait)
+            continue
+        
+        if resp.status_code == 401:
+            access_token = get_access_token()
+            headers = {"Authorization": f"Bearer {access_token}"}
+            time.sleep(1.0)
+            continue
+        
+        # ... (see code for full error handling)
+        
+        return resp.json()
+    
+    return None  # Failed after all retries
+  </pre>
+  
+  <h2>8. Scoring & Analytics</h2>
+  
+  <h3>8.1 Genre Mapping Pipeline</h3>
+  <p><span class="file-path">curator_playlists/genre_mapping.py</span></p>
+  
+  <pre>
+def mapping_genres(mapping_df, df):
+    """
+    Maps Spotify's 5000+ sub-genres to ~20 primary genres.
+    
+    Input:
+        mapping_df: CSV with columns [Subgenre, Primary Genre]
+        df: Playlist dataframe with 'playlist_genres' column
+    
+    Process:
+        1. Normalize subgenres (lowercase, strip whitespace)
+        2. Lookup in mapping_df
+        3. Build mapped_parent_genres list
+        4. Calculate diversity (unique parent genre count)
+        5. Build histogram (Counter object)
+    
+    Outputs Added:
+        - primary_genres: List of parent genres
+        - primary_genre_diversity: Count of unique parents
+        - all_genres: Original Spotify genres
+        - all_genre_diversity: Count of all unique genres
+    """
+    # ... (see code for implementation)
+  </pre>
+  
+  <h3>8.2 Focus Score Application</h3>
+  <p><span class="file-path">curator_playlists/main.py</span></p>
+  
+  <pre>
+def main(curators, mapping_df):
+    # 1. Run data collection for all curators
+    driver_code(curators)
+    
+    # 2. Unify individual CSVs
+    data_dir = pathlib.Path('final_data')
+    dfs = [pd.read_csv(f) for f in data_dir.glob('*.csv')]
+    df_all = pd.concat(dfs, ignore_index=True)
+    
+    # 3. Map genres
+    df = mapping_genres(mapping_df=mapping_df, df=df_all)
+    
+    # 4. Calculate Focus Score
+    df['musinique_focus_score'] = df.apply(musinique_focus_score, axis=1)
+    
+    # 5. Export
+    df.to_csv('data/Playlists.csv', index=False)
+  </pre>
+  
+  <h3>8.3 Combined Vote System</h3>
+  <p>Used for internal ranking, not exposed in final product.</p>
+  
+  <div class="formula">
+    <strong>combined_vote = genre_appearance × playlist_appearance</strong>
+  </div>
+  
+  <pre>
+# Genre Appearance: 
+# Each track receives one vote per associated genre
+# Example: If artist has 3 genres, track gets 3 genre votes
+
+# Playlist Appearance:
+# Count of playlists containing the track
+# Example: Same track in 10 playlists = 10 playlist votes
+
+# Combined Vote:
+# Product of the two
+# Used for internal "track popularity" ranking across curators
+  </pre>
+</div>
+
+<!-- PART III: DATA PIPELINE -->
+<div class="container page-break">
+  <h1 class="section-title">PART III: DATA PIPELINE</h1>
+  
+  <h2>9. Collection → Validation → Enrichment Flow</h2>
+  
+  <h3>9.1 Complete Pipeline</h3>
+  
+  <div class="flow-box">
+    <strong>Stage 1: Keyword Search</strong><br>
+    <code>scripts/data_collection/main.py</code><br>
+    Input: KEYWORDS array<br>
+    Output: playlists_base.csv
+  </div>
+  <div class="flow-arrow">↓</div>
+  
+  <div class="flow-box">
+    <strong>Stage 2: Metadata Enrichment</strong><br>
+    <code>scripts/data_collection/data_collection.py</code><br>
+    Fetch: followers, description, total_tracks<br>
+    Output: playlists_final.csv
+  </div>
+  <div class="flow-arrow">↓</div>
+  
+  <div class="flow-box">
+    <strong>Stage 3: URL Validation</strong><br>
+    <code>scripts/csv_processing/multiprocessing-spotify-validator.py</code><br>
+    Validate: Playlist/profile liveness<br>
+    Output: spotify_data_validated.csv
+  </div>
+  <div class="flow-arrow">↓</div>
+  
+  <div class="flow-box">
+    <strong>Stage 4: Curator Deep-Dive</strong><br>
+    <code>curator_playlists/fetch_data.py</code><br>
+    Extract: ALL tracks, ALL artists, ALL genres<br>
+    Output: Individual curator CSVs
+  </div>
+  <div class="flow-arrow">↓</div>
+  
+  <div class="flow-box">
+    <strong>Stage 5: Contact Enrichment</strong><br>
+    <code>curator_enrichment/agent.py</code><br>
+    Discover: Social handles, submission forms<br>
+    Output: Playlisters.csv
+  </div>
+  <div class="flow-arrow">↓</div>
+  
+  <div class="flow-box">
+    <strong>Stage 6: Scoring & Unification</strong><br>
+    <code>curator_playlists/main.py</code><br>
+    Calculate: Focus scores, map genres<br>
+    Output: <strong>Playlists.csv</strong> (final)
+  </div>
+  
+  <h3>9.2 Data Flow Metrics</h3>
+  
+  <table>
+    <tr>
+      <th>Stage</th>
+      <th>Input Rows</th>
+      <th>Output Rows</th>
+      <th>Typical Runtime</th>
+    </tr>
+    <tr>
+      <td>Keyword Search</td>
+      <td>8 keywords</td>
+      <td>~8,000 playlists</td>
+      <td>10-15 minutes</td>
+    </tr>
+    <tr>
+      <td>Metadata Fetch</td>
+      <td>8,000 playlists</td>
+      <td>8,000 enriched</td>
+      <td>15-20 minutes (async)</td>
+    </tr>
+    <tr>
+      <td>URL Validation</td>
+      <td>8,000 URLs</td>
+      <td>~5,800 valid</td>
+      <td>2-4 hours (16 processes)</td>
+    </tr>
+    <tr>
+      <td>Curator Analysis</td>
+      <td>~100 curators</td>
+      <td>5,800+ playlists</td>
+      <td>Varies (API intensive)</td>
+    </tr>
+    <tr>
+      <td>Contact Discovery</td>
+      <td>84 curators</td>
+      <td>84 enriched</td>
+      <td>~10 minutes (LangGraph)</td>
+    </tr>
+  </table>
+  
+  <h2>10. Genre Mapping System</h2>
+  
+  <h3>10.1 Mapping Table Structure</h3>
+  <p><span class="file-path">MetaData/Music_Genres_unique.csv</span></p>
+  
+  <pre>
+# Expected schema
+Subgenre,Primary Genre
+indie folk,Indie
+indie pop,Indie
+indie rock,Indie
+lo-fi,Electronic
+lofi hip hop,Hip-Hop
+death metal,Metal
+# ... (5000+ mappings)
+  </pre>
+  
+  <h3>10.2 Mapping Logic</h3>
+  <p><span class="file-path">curator_playlists/utils.py::map_playlist_genres()</span></p>
+  
+  <pre>
+def map_playlist_genres(genre_list_raw, mapping_df):
+    """
+    Converts Spotify's granular genres to broad categories.
+    
+    Process:
+        1. Normalize: lowercase, strip whitespace
+        2. Lookup: subgenre → primary genre
+        3. Deduplicate: sorted unique list
+        
+    Returns:
+        (mapped, unmapped)
+        
+    Example:
+        Input: ["indie folk", "bedroom pop", "unknown-genre-xyz"]
+        Output: (["Indie"], ["unknown-genre-xyz"])
+    """
+    # Build lookup dict
+    sub_to_parent = dict(zip(
+        mapping_df["Subgenre"].str.lower().str.strip(),
+        mapping_df["Primary Genre"].str.strip()
+    ))
+    
+    mapped = []
+    unmapped = []
+    
+    for genre in genre_list:
+        normalized = genre.strip().lower()
+        if normalized in sub_to_parent:
+            mapped.append(sub_to_parent[normalized])
+        else:
+            unmapped.append(genre)
+    
+    return sorted(set(mapped)), sorted(set(unmapped))
+  </pre>
+  
+  <div class="alert alert-warning">
+    <strong>⚠️ DATA QUALITY ISSUE</strong>
+    Unmapped genres are currently discarded. Consider:
+    <ul>
+      <li>Logging unmapped genres for manual review</li>
+      <li>Using LLM to classify unknown genres</li>
+      <li>Periodic mapping table updates from Spotify's genre taxonomy</li>
+    </ul>
+  </div>
+  
+  <h2>11. Focus Score Calculation</h2>
+  
+  <h3>11.1 Score Components Deep Dive</h3>
+  
+  <h4>Genre Breadth Score (S₁) - Mathematical Derivation</h4>
+  
+  <div class="formula">
+    S₁ = 100 × (1 - log(n) / log(50))
+  </div>
+  
+  <table>
+    <tr>
+      <th>n (Genres)</th>
+      <th>S₁ Score</th>
+      <th>Interpretation</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>100.0</td>
+      <td>Perfect focus (single genre)</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>82.3</td>
+      <td>Near-perfect (slight variance)</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>59.0</td>
+      <td>Moderate focus</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>41.3</td>
+      <td>Losing coherence</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>23.6</td>
+      <td>Broad/unfocused</td>
+    </tr>
+    <tr>
+      <td>50+</td>
+      <td>0.0</td>
+      <td>"Cleaning lady" playlist</td>
+    </tr>
+  </table>
+  
+  <h4>Genre Density Score (S₂) - Linear Interpolation</h4>
+  
+  <div class="formula">
+    density = total_tracks / genre_count<br>
+    S₂ = 100 × (density - 5) / (80 - 5)
+  </div>
+  
+  <table>
+    <tr>
+      <th>Example</th>
+      <th>Tracks</th>
+      <th>Genres</th>
+      <th>Density</th>
+      <th>S₂ Score</th>
+    </tr>
+    <tr>
+      <td>Deep Jazz Catalog</td>
+      <td>400</td>
+      <td>2</td>
+      <td>200</td>
+      <td>100.0</td>
+    </tr>
+    <tr>
+      <td>Focused Indie</td>
+      <td>150</td>
+      <td>3</td>
+      <td>50</td>
+      <td>60.0</td>
+    </tr>
+    <tr>
+      <td>Broad Mix</td>
+      <td>100</td>
+      <td>15</td>
+      <td>6.7</td>
+      <td>2.3</td>
+    </tr>
+    <tr>
+      <td>Random Dump</td>
+      <td>50</td>
+      <td>25</td>
+      <td>2</td>
+      <td>0.0</td>
+    </tr>
+  </table>
+  
+  <h4>Artist Focus Score (S₃) - Repetition Reward</h4>
+  
+  <div class="formula">
+    ratio = unique_artists / total_tracks<br>
+    S₃ = 100 × (1 - (ratio - 0.3) / (1.0 - 0.3))
+  </div>
+  
+  <table>
+    <tr>
+      <th>Scenario</th>
+      <th>Tracks</th>
+      <th>Unique Artists</th>
+      <th>Ratio</th>
+      <th>S₃ Score</th>
+    </tr>
+    <tr>
+      <td>Artist Showcase</td>
+      <td>100</td>
+      <td>10</td>
+      <td>0.10</td>
+      <td>100.0</td>
+    </tr>
+    <tr>
+      <td>Focused Sound</td>
+      <td>100</td>
+      <td>30</td>
+      <td>0.30</td>
+      <td>100.0</td>
+    </tr>
+    <tr>
+      <td>Moderate Mix</td>
+      <td>100</td>
+      <td>50</td>
+      <td>0.50</td>
+      <td>71.4</td>
+    </tr>
+    <tr>
+      <td>No Curation</td>
+      <td>100</td>
+      <td>100</td>
+      <td>1.00</td>
+      <td>0.0</td>
+    </tr>
+  </table>
+  
+  <h3>11.2 Focus Score Examples</h3>
+  
+  <table>
+    <tr>
+      <th>Playlist</th>
+      <th>Genres</th>
+      <th>Tracks/Genre</th>
+      <th>Artist Ratio</th>
+      <th>S₁</th>
+      <th>S₂</th>
+      <th>S₃</th>
+      <th>Final</th>
+    </tr>
+    <tr>
+      <td>Jazz Piano Trios</td>
+      <td>1</td>
+      <td>200</td>
+      <td>0.15</td>
+      <td>100</td>
+      <td>100</td>
+      <td>100</td>
+      <td><strong>100.0</strong></td>
+    </tr>
+    <tr>
+      <td>Indie Discovery</td>
+      <td>3</td>
+      <td>50</td>
+      <td>0.40</td>
+      <td>73</td>
+      <td>60</td>
+      <td>86</td>
+      <td><strong>73.6</strong></td>
+    </tr>
+    <tr>
+      <td>Mixed Vibes</td>
+      <td>12</td>
+      <td>8</td>
+      <td>0.70</td>
+      <td>35</td>
+      <td>4</td>
+      <td>43</td>
+      <td><strong>28.9</strong></td>
+    </tr>
+  </table>
+  
+  <h2>12. Output Formats</h2>
+  
+  <h3>12.1 Production Outputs</h3>
+  
+  <table>
+    <tr>
+      <th>File</th>
+      <th>Rows</th>
+      <th>Key Columns</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td><code>Playlists.csv</code></td>
+      <td>~5,800</td>
+      <td>
+        curator_name, playlist_name, followers, total_tracks,
+        primary_genres, musinique_focus_score
+      </td>
+      <td>Complete database (Gumroad paid product)</td>
+    </tr>
+    <tr>
+      <td><code>Playlisters.csv</code></td>
+      <td>~84</td>
+      <td>
+        curator_name, instagram, twitter, facebook,
+        submission_form, avg_focus_score, total_reach
+      </td>
+      <td>Curator contact directory</td>
+    </tr>
+    <tr>
+      <td><code>Playlists_sample.csv</code></td>
+      <td>1,000</td>
+      <td>Stratified sample across all genres</td>
+      <td>Free tier (lead magnet)</td>
+    </tr>
+    <tr>
+      <td><code>Playlisters_sample.csv</code></td>
+      <td>15</td>
+      <td>Diverse curator selection (1 per genre)</td>
+      <td>Free tier curator list</td>
+    </tr>
+  </table>
+  
+  <h3>12.2 Sampling Methodology</h3>
+  
+  <pre>
+# Stratified Sampling for Free Tier
+# Goal: Ensure niche genres (Gothic, Metal) represented, not just Pop
+
+def create_stratified_sample(df, n_samples=1000):
+    """
+    Creates genre-balanced sample.
+    
+    Algorithm:
+        1. Group by primary_genre
+        2. Calculate weight = genre_count / total
+        3. Sample proportionally (ensures small genres included)
+        4. Guarantee: At least 1 playlist per genre
+    
+    Prevents:
+        - Over-representation of Pop/Indie
+        - Exclusion of niche genres
+        - Accusations of "only showing mainstream"
+    """
+    # ... (implementation in scripts/create_stratified_sample.py)
+  </pre>
+</div>
+
+<!-- PART IV: MISSING COMPONENTS -->
+<div class="container page-break">
+  <h1 class="section-title">PART IV: MISSING COMPONENTS (TODO)</h1>
+  
+  <div class="alert alert-danger">
+    <strong>🚨 CRITICAL GAP: Forensic Metrics</strong>
+    The current system calculates Focus Score (genre coherence) but lacks the "Integrity Layer" 
+    components required to detect bot farms, payola patterns, and algorithmic poisoning.
+  </div>
+  
+  <h2>13. Forensic Metrics Suite (TODO)</h2>
+  
+  <h3>13.1 Z-Score Growth Monitor</h3>
+  
+  <div class="action-item critical">
+    <strong>TODO-001: Implement Z-Score Spike Detection</strong><br>
+    <span class="priority-critical">CRITICAL</span> | Effort: 2-3 days<br>
+    <p><strong>Goal:</strong> Detect "Bot Injection" via vertical follower growth spikes.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Technical Specification</div>
+    <p><strong>File to create:</strong> <code>forensic_metrics/z_score_monitor.py</code></p>
+    
+    <h4>Data Requirements:</h4>
+    <ul>
+      <li>Historical follower counts (time series)</li>
+      <li>Source: ChartMetric API or scheduled snapshots</li>
+      <li>Minimum: 3 months of data for baseline calculation</li>
+    </ul>
+    
+    <h4>Algorithm:</h4>
+    <pre>
+import numpy as np
+from scipy import stats
+
+def calculate_z_score(current_growth, historical_data):
+    """
+    Z-Score = (x - μ) / σ
+    
+    Where:
+        x = current day's growth
+        μ = mean growth for this playlist's genre
+        σ = standard deviation
+        
+    Flags:
+        Z > 2.0 = Statistically significant (95% confidence)
+        Z > 3.0 = Highly anomalous (99.7% confidence)
+    """
+    mean = np.mean(historical_data)
+    std = np.std(historical_data)
+    
+    if std == 0:
+        return 0  # No variance
+    
+    z = (current_growth - mean) / std
+    return z
+
+def detect_bot_injection(follower_history):
+    """
+    Scans time series for vertical spikes.
+    
+    Returns:
+        {
+            'bot_injection_detected': bool,
+            'spike_dates': List[str],
+            'max_z_score': float,
+            'pattern': 'vertical' | 'staircase' | 'organic'
+        }
+    """
+    # Implementation required
+  </pre>
+  </div>
+  
+  <h3>13.2 Churn Tracker</h3>
+  
+  <div class="action-item critical">
+    <strong>TODO-002: Implement Song Removal Pattern Detection</strong><br>
+    <span class="priority-critical">CRITICAL</span> | Effort: 2-3 days<br>
+    <p><strong>Goal:</strong> Detect "Step Function" removals indicating pay-for-placement contracts.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Technical Specification</div>
+    <p><strong>File to create:</strong> <code>forensic_metrics/churn_detector.py</code></p>
+    
+    <h4>Data Requirements:</h4>
+    <ul>
+      <li>Track <code>added_at</code> timestamps (from Spotify API)</li>
+      <li>Snapshot playlist state weekly</li>
+      <li>Compare: tracks present week N vs week N+1</li>
+    </ul>
+    
+    <h4>Algorithm:</h4>
+    <pre>
+def analyze_removal_patterns(snapshots):
+    """
+    Detects coordinated removal patterns.
+    
+    Red Flags:
+        - >50% of tracks removed at exactly 7 days
+        - >30% removed at exactly 14 days
+        - >20% removed at exactly 30 days
+        
+    Returns:
+        {
+            'retention_score': 1-5,  # 1 = high risk, 5 = organic
+            'removal_histogram': {7: count, 14: count, ...},
+            'suspected_payola': bool,
+            'average_retention_days': float
+        }
+    """
+    # Calculate time delta for each removed track
+    removals = []
+    for track in get_removed_tracks(snapshots):
+        days_on_playlist = (track.removed_at - track.added_at).days
+        removals.append(days_on_playlist)
+    
+    # Check for clustering at 7/14/30 days
+    hist = Counter(removals)
+    
+    if hist.get(7, 0) / len(removals) > 0.5:
+        return {'retention_score': 1, 'suspected_payola': True}
+    
+    # ... (full implementation required)
+  </pre>
+  </div>
+  
+  <h3>13.3 FAL (Fans Also Like) Auditor</h3>
+  
+  <div class="action-item high">
+    <strong>TODO-003: Implement "Fans Also Like" Resonance Check</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 1-2 days<br>
+    <p><strong>Goal:</strong> Verify if playlists generate algorithmic connections between artists.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Technical Specification</div>
+    <p><strong>File to create:</strong> <code>forensic_metrics/fal_auditor.py</code></p>
+    
+    <h4>Data Source:</h4>
+    <pre>
+# Spotify API endpoint
+GET https://api.spotify.com/v1/artists/{id}/related-artists
+
+# Returns:
+{
+  "artists": [
+    {"id": "...", "name": "...", "genres": [...], "popularity": X}
+  ]
+}
+  </pre>
+    
+    <h4>Algorithm:</h4>
+    <pre>
+def audit_fal_resonance(playlist):
+    """
+    Checks if artists on playlist have FAL connections.
+    
+    Process:
+        1. Get top 5-10 artists from playlist
+        2. Fetch FAL for each artist
+        3. Check if FAL artists are:
+           a. In same genre
+           b. Also on this playlist
+           c. Have reasonable popularity alignment
+           
+    Red Flags:
+        - Empty FAL (0 related artists) = "Non-Resonant"
+        - Unrelated genres in FAL = "Random Network"
+        - All FAL artists unknown = "Digital Ghost"
+        
+    Returns:
+        {
+            'resonance_score': float,  # 0-100
+            'empty_fal_count': int,
+            'cross_genre_fal_count': int,
+            'verdict': 'Resonant' | 'Non-Resonant' | 'Suspicious'
+        }
+    """
+    # Implementation required
+  </pre>
+  </div>
+  
+  <h2>14. Sonic Intelligence Layer (TODO)</h2>
+  
+  <h3>14.1 Genre-Space Ellipsoid Calculator</h3>
+  
+  <div class="action-item high">
+    <strong>TODO-004: Implement Ellipsoid Diversity Metric</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 3-5 days<br>
+    <p><strong>Goal:</strong> Quantify "Sonic Chaos" via multidimensional genre-space analysis.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Mathematical Framework</div>
+    <p><strong>File to create:</strong> <code>sonic_intelligence/ellipsoid_metric.py</code></p>
+    
+    <h4>Data Requirements:</h4>
+    <ul>
+      <li>Spotify Audio Features API for each track:
+        <ul>
+          <li>energy (0-1)</li>
+          <li>valence (0-1)</li>
+          <li>danceability (0-1)</li>
+          <li>tempo (BPM)</li>
+          <li>acousticness (0-1)</li>
+          <li>instrumentalness (0-1)</li>
+          <li>speechiness (0-1)</li>
+        </ul>
+      </li>
+      <li>Linear Discriminant Analysis (LDA) for dimensionality reduction</li>
+    </ul>
+    
+    <h4>Algorithm:</h4>
+    <pre>
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+import numpy as np
+
+def calculate_ellipsoid_volume(playlist_tracks):
+    """
+    Models playlist as ellipsoid in genre-space.
+    
+    Steps:
+        1. Fetch audio features for all tracks
+        2. Normalize features to [0,1]
+        3. Apply LDA to find separating dimensions
+        4. Fit ellipsoid to track points
+        5. Calculate volume: V = (4/3)π × ∏(rᵢ)
+        
+    Interpretation:
+        - Small volume = Focused (human curated)
+        - Large volume = Chaotic (bot farm)
+        - Threshold: 99th percentile of organic playlists
+        
+    Returns:
+        {
+            'ellipsoid_volume': float,
+            'sonic_chaos_score': float,  # 0-100 (100 = chaos)
+            'verdict': 'Focused' | 'Moderate' | 'Chaotic'
+        }
+    """
+    # Step 1: Fetch audio features
+    features = fetch_audio_features_batch(playlist_tracks)
+    
+    # Step 2: Build feature matrix
+    X = np.array([[
+        track['energy'],
+        track['valence'],
+        track['danceability'],
+        # ... all features
+    ] for track in features])
+    
+    # Step 3: Apply LDA (if labeled data available)
+    # Otherwise use PCA for dimensionality reduction
+    
+    # Step 4: Fit ellipsoid
+    # Calculate covariance matrix, eigenvalues
+    
+    # Step 5: Volume = product of semi-axes
+    # volume = (4/3) * π * np.prod(semi_axes)
+    
+    # IMPLEMENTATION REQUIRED
+  </pre>
+  </div>
+  
+  <div class="alert alert-info">
+    <strong>ℹ️ RESEARCH NOTE</strong>
+    The Purdue Engineering paper shows human playlists are typically <strong>5 orders of magnitude smaller</strong> 
+    than the full song database volume. Use this as baseline for threshold calibration.
+  </div>
+  
+  <h3>14.2 S-BERT Semantic Matcher</h3>
+  
+  <div class="action-item high">
+    <strong>TODO-005: Implement Description-Content Semantic Matching</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 2-3 days<br>
+    <p><strong>Goal:</strong> Detect "Playlist Stuffing" via title/description misalignment.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Technical Specification</div>
+    <p><strong>File to create:</strong> <code>sonic_intelligence/semantic_matcher.py</code></p>
+    
+    <h4>Model:</h4>
+    <pre>
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+def semantic_alignment_score(playlist_description, genre_list):
+    """
+    Calculates cosine similarity between text and reality.
+    
+    Process:
+        1. Embed playlist description/title
+        2. Embed aggregate genre string
+        3. Calculate cosine similarity
+        
+    Formula:
+        similarity = (A · B) / (||A|| × ||B||)
+        
+    Red Flags:
+        - similarity < 0.3 = "Playlist Stuffing"
+        - Example: "Chill Lofi" description + Death Metal tracks
+        
+    Returns:
+        {
+            'similarity': float,  # 0-1
+            'alignment_score': float,  # 0-100
+            'verdict': 'Aligned' | 'Misaligned' | 'Deceptive'
+        }
+    """
+    # Embed description
+    desc_embedding = model.encode(playlist_description)
+    
+    # Embed genres (convert list to text)
+    genre_text = ", ".join(genre_list)
+    genre_embedding = model.encode(genre_text)
+    
+    # Cosine similarity
+    from sklearn.metrics.pairwise import cosine_similarity
+    similarity = cosine_similarity(
+        [desc_embedding], 
+        [genre_embedding]
+    )[0][0]
+    
+    return {
+        'similarity': similarity,
+        'alignment_score': round(similarity * 100, 1),
+        'verdict': 'Aligned' if similarity > 0.5 else 'Deceptive'
+    }
+  </pre>
+  </div>
+  
+  <h2>15. Algorithmic Monitoring (TODO)</h2>
+  
+  <h3>15.1 SPS Milestone Tracker</h3>
+  
+  <div class="action-item medium">
+    <strong>TODO-006: Track Spotify Popularity Score Movements</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Effort: 2 days<br>
+    <p><strong>Goal:</strong> Monitor if playlists push tracks past critical SPS thresholds.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">SPS Milestone Reference</div>
+    <table>
+      <tr>
+        <th>SPS Range</th>
+        <th>Activity Level</th>
+        <th>Algorithmic Consequence</th>
+      </tr>
+      <tr>
+        <td>20-29</td>
+        <td>Moderate</td>
+        <td>Release Radar push (first 28 days)</td>
+      </tr>
+      <tr>
+        <td>30-59</td>
+        <td>Critical Growth</td>
+        <td>Discover Weekly activation</td>
+      </tr>
+      <tr>
+        <td>60-79</td>
+        <td>High Traction</td>
+        <td>Editorial chart consideration</td>
+      </tr>
+      <tr>
+        <td>80-100</td>
+        <td>Global Hit</td>
+        <td>Universal platform exposure</td>
+      </tr>
+    </table>
+    
+    <h4>Implementation:</h4>
+    <pre>
+def track_sps_milestones(playlist_id, timeframe_days=30):
+    """
+    Monitors SPS movement for tracks in a playlist.
+    
+    Data Collection:
+        - Snapshot track popularity scores daily
+        - Store: track_id, date, popularity_score
+        
+    Analysis:
+        - Did tracks cross 20% threshold?
+        - Did tracks cross 30% threshold?
+        - What % of tracks achieved milestones?
+        
+    Verdict:
+        - High %  = "Algorithmic Efficiency" (good playlist)
+        - Low % = "Dead End" (no algorithmic impact)
+        
+    Note: SPS influenced by recency (last 28-30 days)
+    """
+    # IMPLEMENTATION REQUIRED
+  </pre>
+  </div>
+  
+  <h2>16. Network Analysis Tools (TODO)</h2>
+  
+  <h3>16.1 Graph-Based Collusion Detection</h3>
+  
+  <div class="action-item medium">
+    <strong>TODO-007: Build Transaction Graph Analyzer</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Effort: 5-7 days<br>
+    <p><strong>Goal:</strong> Identify "Low and Slow" botnets via network clustering.</p>
+  </div>
+  
+  <div class="card">
+    <div class="card-header">Conceptual Framework</div>
+    <p>Advanced botnets distribute streams across massive catalogs. Detection requires finding hidden connections between seemingly diverse accounts.</p>
+    
+    <h4>Graph Construction:</h4>
+    <pre>
+# Nodes: User accounts, Artists, Playlists
+# Edges: Listening events (User → Track → Artist)
+
+# Red Flag Pattern:
+# If 1,000 "different" accounts all stream the same niche tracks
+# at similar timestamps, calculate statistical probability:
+#
+# P(organic) = probability all 1000 independently found rare track
+#            ≈ 0 (effectively impossible)
+
+# Graph Neural Networks (GNNs) can detect:
+# - Collusive clusters
+# - Temporal synchronization
+# - Geographic clustering (data center IPs)
+  </pre>
+    
+    <p><strong>Libraries Required:</strong></p>
+    <ul>
+      <li>NetworkX (graph construction)</li>
+      <li>PyTorch Geometric (GNN implementation)</li>
+      <li>Graph clustering algorithms (Louvain, etc.)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PART V: OPERATIONS -->
+<div class="container page-break">
+  <h1 class="section-title">PART V: OPERATIONS</h1>
+  
+  <h2>17. Environment Configuration</h2>
+  
+  <h3>17.1 Required Environment Variables</h3>
+  
+  <table>
+    <tr>
+      <th>Variable</th>
+      <th>Required By</th>
+      <th>Description</th>
+      <th>Example</th>
+    </tr>
+    <tr>
+      <td><code class="env-var">SPOTIFY_CLIENT_ID</code></td>
+      <td><span class="tag tag-collection">Collector</span></td>
+      <td>Spotify API application ID</td>
+      <td>abc123xyz...</td>
+    </tr>
+    <tr>
+      <td><code class="env-var">SPOTIFY_CLIENT_SECRET</code></td>
+      <td><span class="tag tag-collection">Collector</span></td>
+      <td>Spotify API secret</td>
+      <td>def456uvw...</td>
+    </tr>
+    <tr>
+      <td><code class="env-var">SERP_API_KEY</code></td>
+      <td><span class="tag tag-enrichment">Agent</span></td>
+      <td>SerpApi key for Google searches</td>
+      <td>xyz789abc...</td>
+    </tr>
+    <tr>
+      <td><code class="env-var">GROQ_API_KEY_1..5</code></td>
+      <td><span class="tag tag-enrichment">Agent</span></td>
+      <td>Groq API keys (rotation for rate limits)</td>
+      <td>gsk_...</td>
+    </tr>
+    <tr>
+      <td><code class="env-var">LANGCHAIN_API_KEY</code></td>
+      <td><span class="tag tag-enrichment">Agent</span></td>
+      <td>LangSmith tracing (optional)</td>
+      <td>ls__...</td>
+    </tr>
+    <tr>
+      <td><code class="env-var">GOOGLE_APPLICATION_CREDENTIALS</code></td>
+      <td><span class="tag tag-enrichment">Agent</span></td>
+      <td>Vertex AI credentials (Gemini)</td>
+      <td>/path/to/service-account.json</td>
+    </tr>
+  </table>
+  
+  <h3>17.2 Configuration Files</h3>
+  
+  <table>
+    <tr>
+      <th>File</th>
+      <th>Purpose</th>
+      <th>Key Settings</th>
+    </tr>
+    <tr>
+      <td><code>curator_enrichment/config.py</code></td>
+      <td>Agent configuration</td>
+      <td>base_url for Google Custom Search</td>
+    </tr>
+    <tr>
+      <td><code>curator_playlists/config.py</code></td>
+      <td>Pipeline configuration</td>
+      <td>
+        <code>MAX_RETRIES = 7</code><br>
+        <code>CURATOR_START_INDEX</code><br>
+        <code>CURATOR_END_INDEX</code>
+      </td>
+    </tr>
+    <tr>
+      <td><code>scripts/data_collection/config.py</code></td>
+      <td>Spotify API settings</td>
+      <td>
+        <code>KEYWORDS</code> (search terms)<br>
+        <code>REQUEST_DELAY = 0.15</code><br>
+        <code>MAX_PLAYLISTS_PER_KEYWORD = 1000</code>
+      </td>
+    </tr>
+  </table>
+  
+  <h2>18. Deployment Workflow</h2>
+  
+  <h3>18.1 Initial Data Collection</h3>
+  
+  <div class="card">
+    <div class="card-header">Step-by-Step Execution</div>
+    <ol>
+      <li><strong>Keyword Search</strong>
+        <pre>cd scripts/data_collection
+python main.py
+# Output: data/playlists_final.csv</pre>
+      </li>
+      
+      <li><strong>URL Validation</strong>
+        <pre>cd scripts/csv_processing
+# Edit INPUT_FILE in multiprocessing-spotify-validator.py
+python multiprocessing-spotify-validator.py
+# Output: processed/spotify_data_validated.csv</pre>
+      </li>
+      
+      <li><strong>Filter Valid Playlists</strong>
+        <pre>import pandas as pd
+df = pd.read_csv('processed/spotify_data_validated.csv')
+valid = df[df['is_playlist'] == 'valid playlist']
+valid.to_csv('spotify_valid_playlists.csv', index=False)</pre>
+      </li>
+      
+      <li><strong>Curator Deep Analysis</strong>
+        <pre>cd curator_playlists
+# Edit CURATOR_START_INDEX, CURATOR_END_INDEX in config.py
+python main.py
+# Output: data/Playlists.csv (with Focus Scores)</pre>
+      </li>
+      
+      <li><strong>Contact Enrichment</strong>
+        <pre>cd curator_enrichment
+# Populate curators list in agent.py from Playlists.csv
+python agent.py
+# Output: Playlisters.csv</pre>
+      </li>
+    </ol>
+  </div>
+  
+  <h3>18.2 Incremental Updates</h3>
+  
+  <pre>
+# Weekly refresh workflow
+# Goal: Combat "Data Entropy" (broken links, deleted playlists)
+
+1. Re-run URL validation on existing Playlists.csv
+2. Mark newly invalid playlists
+3. Re-run curator_playlists for curators with failed links
+4. Update focus scores (may change if tracks removed)
+5. Regenerate Gumroad product files
+  </pre>
+  
+  <h2>19. Known Issues & Limitations</h2>
+  
+  <h3>19.1 Current Limitations</h3>
+  
+  <div class="action-item">
+    <strong>LIMIT-001: No Historical Data</strong><br>
+    <p>Current system is a <strong>snapshot</strong>, not time-series. Cannot detect growth patterns without historical tracking.</p>
+    <p><strong>Impact:</strong> Z-score monitoring, churn detection not possible with current data.</p>
+    <p><strong>Mitigation:</strong> Implement weekly snapshots, store in time-series DB.</p>
+  </div>
+  
+  <div class="action-item">
+    <strong>LIMIT-002: No Audio Feature Analysis</strong><br>
+    <p>Genres extracted from artist metadata, not actual audio analysis.</p>
+    <p><strong>Impact:</strong> Cannot calculate ellipsoid diversity without audio features.</p>
+    <p><strong>Mitigation:</strong> Integrate Spotify Audio Features API.</p>
+  </div>
+  
+  <div class="action-item">
+    <strong>LIMIT-003: Agent Rate Limits</strong><br>
+    <p>Curator enrichment limited to ~20 curators/hour due to:</p>
+    <ul>
+      <li>SerpAPI rate limits (100 searches/hour on free tier)</li>
+      <li>Gemini API rate limits (60 req/min on Vertex AI)</li>
+      <li>Manual 2-3 second delays to prevent detection</li>
+    </ul>
+  </div>
+  
+  <div class="action-item">
+    <strong>LIMIT-004: Spotify API Pagination Limits</strong><br>
+    <p>Curator deep-dive limited to first 50 playlists per curator.</p>
+    <p><strong>Impact:</strong> Curators with 100+ playlists (like "jr" with 1,235) not fully analyzed.</p>
+    <p><strong>Mitigation:</strong> Implement continuation tokens, or sample top N by followers.</p>
+  </div>
+  
+  <h3>19.2 Data Quality Issues</h3>
+  
+  <div class="alert alert-warning">
+    <strong>⚠️ DATA QUALITY CONCERNS</strong>
+  </div>
+  
+  <table>
+    <tr>
+      <th>Issue</th>
+      <th>Affected Data</th>
+      <th>Frequency</th>
+      <th>Impact</th>
+    </tr>
+    <tr>
+      <td>Unmapped Genres</td>
+      <td>~5-10% of genres</td>
+      <td>Common</td>
+      <td>Focus scores may be inaccurate for edge genres</td>
+    </tr>
+    <tr>
+      <td>Curator Name Variations</td>
+      <td>Contact enrichment</td>
+      <td>~20% of curators</td>
+      <td>Agent may miss social handles due to spelling differences</td>
+    </tr>
+    <tr>
+      <td>Deleted Playlists</td>
+      <td>URL validation</td>
+      <td>~30% churn over 6 months</td>
+      <td>Requires weekly re-validation</td>
+    </tr>
+    <tr>
+      <td>Private Playlists</td>
+      <td>Collection pipeline</td>
+      <td>Excluded by API</td>
+      <td>Database only includes public playlists</td>
+    </tr>
+  </table>
+</div>
+
+<!-- PART VI: ROADMAP -->
+<div class="container page-break">
+  <h1 class="section-title">PART VI: DEVELOPMENT ROADMAP</h1>
+  
+  <h2>20. Prioritized Development Tasks</h2>
+  
+  <h3>20.1 Critical Priority (Next 2 Weeks)</h3>
+  
+  <div class="action-item critical">
+    <strong>DEV-001: Historical Data Collection Infrastructure</strong><br>
+    <span class="priority-critical">CRITICAL</span> | Effort: 3-5 days<br>
+    
+    <p><strong>Requirements:</strong></p>
+    <ul>
+      <li>Set up PostgreSQL time-series DB (or TimescaleDB)</li>
+      <li>Create schema for follower snapshots</li>
+      <li>Implement daily cron job to snapshot existing Playlists.csv</li>
+      <li>Store: playlist_id, date, followers, total_tracks, top_artists</li>
+    </ul>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>infrastructure/timeseries_db_setup.sql</code></li>
+      <li><code>cron_jobs/daily_snapshot.py</code></li>
+      <li>Migration script for existing CSV data</li>
+    </ul>
+  </div>
+  
+  <div class="action-item critical">
+    <strong>DEV-002: Implement Z-Score Monitor (TODO-001)</strong><br>
+    <span class="priority-critical">CRITICAL</span> | Effort: 2-3 days<br>
+    
+    <p><strong>Dependencies:</strong> DEV-001 (historical data)</p>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>forensic_metrics/z_score_monitor.py</code></li>
+      <li>Add column to Playlists.csv: <code>z_score_max</code>, <code>bot_injection_flag</code></li>
+      <li>Unit tests for edge cases (zero variance, missing data)</li>
+    </ul>
+  </div>
+  
+  <div class="action-item critical">
+    <strong>DEV-003: Implement Churn Detector (TODO-002)</strong><br>
+    <span class="priority-critical">CRITICAL</span> | Effort: 2-3 days<br>
+    
+    <p><strong>Dependencies:</strong> DEV-001 (historical data)</p>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>forensic_metrics/churn_detector.py</code></li>
+      <li>Add column to Playlists.csv: <code>retention_score</code> (1-5 scale)</li>
+      <li>Visualization: Retention histogram for each playlist</li>
+    </ul>
+  </div>
+  
+  <h3>20.2 High Priority (Next Month)</h3>
+  
+  <div class="action-item high">
+    <strong>DEV-004: Audio Features Integration</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 3-4 days<br>
+    
+    <p><strong>Goal:</strong> Enable ellipsoid diversity metric calculation.</p>
+    
+    <p><strong>Implementation:</strong></p>
+    <pre>
+# Spotify API endpoint
+GET https://api.spotify.com/v1/audio-features/{id}
+
+# Returns:
+{
+  "energy": 0.73,
+  "valence": 0.54,
+  "danceability": 0.65,
+  "tempo": 128.0,
+  # ... etc
+}
+
+# Batch endpoint (up to 100 tracks):
+GET https://api.spotify.com/v1/audio-features?ids=...
+  </pre>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>sonic_intelligence/audio_features_fetcher.py</code></li>
+      <li>Update <code>curator_playlists/fetch_data.py</code> to collect features</li>
+      <li>Store in new CSV: <code>Track_Audio_Features.csv</code></li>
+    </ul>
+  </div>
+  
+  <div class="action-item high">
+    <strong>DEV-005: S-BERT Semantic Matching (TODO-005)</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 2-3 days<br>
+    
+    <p><strong>Dependencies:</strong> None (can run on existing data)</p>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>sonic_intelligence/semantic_matcher.py</code></li>
+      <li>Add columns: <code>semantic_alignment</code>, <code>stuffing_flag</code></li>
+      <li>Requirements: <code>sentence-transformers</code>, <code>scikit-learn</code></li>
+    </ul>
+  </div>
+  
+  <div class="action-item high">
+    <strong>DEV-006: FAL Auditor (TODO-003)</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 1-2 days<br>
+    
+    <p><strong>Deliverables:</strong></p>
+    <ul>
+      <li><code>forensic_metrics/fal_auditor.py</code></li>
+      <li>Add columns: <code>resonance_score</code>, <code>empty_fal_count</code></li>
+    </ul>
+  </div>
+  
+  <h3>20.3 Medium Priority (Next Quarter)</h3>
+  
+  <div class="action-item medium">
+    <strong>DEV-007: Ellipsoid Metric Calculator (TODO-004)</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Effort: 5-7 days<br>
+    
+    <p><strong>Dependencies:</strong> DEV-004 (audio features)</p>
+    
+    <p><strong>Research Required:</strong></p>
+    <ul>
+      <li>Baseline calibration (what's 99th percentile volume?)</li>
+      <li>LDA vs PCA for dimensionality reduction</li>
+      <li>Genre-specific thresholds (Jazz vs EDM may differ)</li>
+    </ul>
+  </div>
+  
+  <div class="action-item medium">
+    <strong>DEV-008: SPS Milestone Tracker (TODO-006)</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Effort: 2 days<br>
+    
+    <p><strong>Note:</strong> Requires daily snapshots to track SPS movement over time.</p>
+  </div>
+  
+  <h2>21. Research Infrastructure Goals</h2>
+  
+  <h3>21.1 Cooperative Platform Integration</h3>
+  
+  <div class="card">
+    <div class="card-header">Strategic Direction: Beyond Spotify Optimization</div>
+    <p>Musinique is not just a "better SubmitHub." It's research infrastructure for studying algorithmic exploitation and building cooperative alternatives.</p>
+    
+    <h4>Phase 1: Expose the System</h4>
+    <ul>
+      <li>Release PFC (Perfect Fit Content) analysis</li>
+      <li>Quantify ghost artist prevalence in mood playlists</li>
+      <li>Calculate displaced revenue (€X million annually)</li>
+      <li>Media: Pitch to Pitchfork, NPR, Billboard</li>
+    </ul>
+    
+    <h4>Phase 2: Map the Alternatives</h4>
+    <ul>
+      <li>Database of library streaming programs (50+ worldwide)</li>
+      <li>Existing cooperatives (Catalytic Sound, Resonate, Ampled)</li>
+      <li>Public funding opportunities (arts councils, grants)</li>
+      <li>Independent radio (college, community stations)</li>
+    </ul>
+    
+    <h4>Phase 3: Build the Infrastructure</h4>
+    <ul>
+      <li>Streaming platform toolkit (audio CDN, payment processing)</li>
+      <li>Governance tools (voting, transparency dashboards)</li>
+      <li>Discovery interfaces (context-rich, human-curated)</li>
+      <li>AI music tools FOR artists (not replacing them)</li>
+    </ul>
+  </div>
+  
+  <h3>21.2 Curator Exodus Strategy</h3>
+  
+  <div class="action-item high">
+    <strong>TODO-008: Generate Genre-Specific Curator Lists</strong><br>
+    <span class="priority-high">HIGH</span> | Effort: 1 day<br>
+    
+    <p><strong>Goal:</strong> Extract high-quality curators for cooperative recruitment.</p>
+    
+    <p><strong>Filter Criteria:</strong></p>
+    <pre>
+SELECT * FROM Playlists
+WHERE 
+    musinique_focus_score > 70
+    AND primary_genre_diversity <= 3
+    AND total_playlists BETWEEN 10 AND 50  -- Human scale
+    AND followers > 10000                  -- Has audience
+    AND corporate_flag = FALSE             -- Not Sony/UMG
+    AND last_updated < 30_days             -- Active
+ORDER BY musinique_focus_score DESC
+  </pre>
+    
+    <p><strong>Target Genres:</strong></p>
+    <ul>
+      <li>Jazz (expected: 100-300 curators)</li>
+      <li>Ambient/Experimental (50-150)</li>
+      <li>Folk/Americana (150-300)</li>
+      <li>Metal (100-200)</li>
+      <li>Classical (50-100)</li>
+      <li>Electronic/Techno (100-200)</li>
+    </ul>
+    
+    <p><strong>Outreach Message:</strong></p>
+    <blockquote style="background: #f0f0f8; padding: 12px; border-left: 3px solid #9333ea; margin: 10px 0;">
+      "You're curating on Spotify for free, building their value. What if you curated for a cooperative you owned instead? We've built the infrastructure. You provide the expertise. Artists pay membership. Listeners pay subscription. You get paid for curation. Interested?"
+    </blockquote>
+  </div>
+  
+  <h2>22. Product Strategy</h2>
+  
+  <h3>22.1 Current Product (Gumroad)</h3>
+  
+  <table>
+    <tr>
+      <th>Product</th>
+      <th>Price</th>
+      <th>Content</th>
+      <th>Goal</th>
+    </tr>
+    <tr>
+      <td>Indie Playlister Starter Pack</td>
+      <td>$0+ (PWYW)</td>
+      <td>
+        • 15 curators (contact info)<br>
+        • 1,000 playlists (stratified sample)<br>
+        • Focus scores
+      </td>
+      <td>Lead magnet, email capture, prove niche coverage</td>
+    </tr>
+    <tr>
+      <td>Complete Curator Database</td>
+      <td>$25</td>
+      <td>
+        • 84 curators (full contact)<br>
+        • 5,800+ playlists<br>
+        • All metrics
+      </td>
+      <td>Revenue, positioned as time-savings ($25 = 36 weeks saved)</td>
+    </tr>
+  </table>
+  
+  <h3>22.2 Future Products (TODO)</h3>
+  
+  <div class="action-item medium">
+    <strong>TODO-009: Integrity Audit Reports (Premium Tier)</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Price: $10/month subscription<br>
+    
+    <p><strong>Value Proposition:</strong> Live monitoring, not static snapshot.</p>
+    
+    <p><strong>Features:</strong></p>
+    <ul>
+      <li>Weekly playlist health reports (updated focus scores)</li>
+      <li>Bot injection alerts (Z-score spikes)</li>
+      <li>Churn pattern warnings (payola detection)</li>
+      <li>SPS milestone tracking for submitted tracks</li>
+      <li>Personalized recommendations (which playlists match YOUR sound)</li>
+    </ul>
+  </div>
+  
+  <div class="action-item low">
+    <strong>TODO-010: PFC Exposure Package (Free/Media)</strong><br>
+    <span class="priority-low">LOW</span> | Target: Journalists, regulators<br>
+    
+    <p><strong>Contents:</strong></p>
+    <ul>
+      <li>Analysis: X% of mood playlists contain ghost artists</li>
+      <li>Label patterns: Epidemic Sound, Firefly prevalence</li>
+      <li>Revenue calculations: €Y million displaced annually</li>
+      <li>Corporate curator dominance: Z% of total reach</li>
+    </ul>
+    
+    <p><strong>Goal:</strong> Media coverage, regulatory attention, artist awareness.</p>
+  </div>
+  
+  <h3>22.3 Technical Debt & Refactoring</h3>
+  
+  <div class="action-item">
+    <strong>REFACTOR-001: Unify Data Pipeline</strong><br>
+    <p>Current pipeline is fragmented across multiple scripts with manual CSV passing.</p>
+    <p><strong>Goal:</strong> Create single orchestration script.</p>
+    <pre>
+# Proposed: pipeline_orchestrator.py
+def run_full_pipeline(config):
+    """
+    End-to-end execution from keywords to final CSVs.
+    
+    Steps:
+        1. Keyword search
+        2. Metadata enrichment
+        3. URL validation
+        4. Curator analysis (configurable range)
+        5. Contact discovery
+        6. Genre mapping
+        7. Focus score calculation
+        8. Sampling for Gumroad
+        
+    Config:
+        - curator_range: (start, end) indices
+        - enable_validation: bool
+        - enable_enrichment: bool
+        - output_dir: path
+    """
+    # IMPLEMENTATION REQUIRED
+  </pre>
+  </div>
+  
+  <div class="action-item">
+    <strong>REFACTOR-002: Standardize Error Handling</strong><br>
+    <p>Current scripts have inconsistent error handling (some print, some raise, some ignore).</p>
+    <p><strong>Goal:</strong> Unified logging and error reporting.</p>
+    <pre>
+# Proposed: utils/error_handler.py
+import logging
+
+logger = logging.getLogger('musinique')
+
+class MusiниqueError(Exception):
+    """Base exception for Musinique platform."""
+    pass
+
+class SpotifyAPIError(MusiниqueError):
+    """Raised when Spotify API fails after retries."""
+    pass
+
+class ValidationError(MusiниqueError):
+    """Raised when data validation fails."""
+    pass
+
+# Add structured logging throughout
+  </pre>
+  </div>
+  
+  <div class="action-item">
+    <strong>REFACTOR-003: Extract Shared Configuration</strong><br>
+    <p>Currently each module has own config.py with duplicate settings.</p>
+    <p><strong>Goal:</strong> Single source of truth for system-wide config.</p>
+    <pre>
+# Proposed: config/settings.py
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    # Spotify
+    spotify_client_id: str
+    spotify_client_secret: str
+    spotify_request_delay: float = 0.15
+    
+    # Research APIs
+    serp_api_key: str
+    groq_api_keys: list[str]
+    
+    # Pipeline
+    max_retries: int = 7
+    curator_batch_size: int = 10
+    
+    class Config:
+        env_file = '.env'
+
+settings = Settings()
+  </pre>
+  </div>
+  
+  <h3>20.4 Testing & CI/CD</h3>
+  
+  <div class="action-item medium">
+    <strong>DEV-009: Add Unit Tests</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Coverage Goal: 70%<br>
+    
+    <p><strong>Priority Test Suites:</strong></p>
+    <ul>
+      <li><code>tests/test_focus_score.py</code> - Score calculation edge cases</li>
+      <li><code>tests/test_genre_mapping.py</code> - Mapping logic, unmapped handling</li>
+      <li><code>tests/test_z_score.py</code> - Statistical anomaly detection</li>
+      <li><code>tests/test_spotify_validator.py</code> - URL validation patterns</li>
+    </ul>
+  </div>
+  
+  <div class="action-item medium">
+    <strong>DEV-010: Set Up CI/CD Pipeline</strong><br>
+    <span class="priority-medium">MEDIUM</span> | Effort: 2 days<br>
+    
+    <p><strong>GitHub Actions Workflow:</strong></p>
+    <pre>
+name: Musinique CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ --cov=./ --cov-report=xml
+      
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: black --check .
+      - run: flake8 .
+      - run: mypy .
+  </pre>
+  </div>
+</div>
+
+<!-- FINAL SECTION -->
+<div class="container page-break">
+  <h1 class="section-title">APPENDIX: QUICK REFERENCE</h1>
+  
+  <h2>File Path Quick Reference</h2>
+  
+  <table>
+    <tr>
+      <th>Need To...</th>
+      <th>File Path</th>
+      <th>Key Function/Variable</th>
+    </tr>
+    <tr>
+      <td>Change curator range</td>
+      <td><code>curator_playlists/config.py</code></td>
+      <td><code>CURATOR_START_INDEX</code>, <code>CURATOR_END_INDEX</code></td>
+    </tr>
+    <tr>
+      <td>Modify Focus Score weights</td>
+      <td><code>curator_playlists/utils.py</code></td>
+      <td><code>musinique_focus_score()</code> - Change 0.45, 0.30, 0.25</td>
+    </tr>
+    <tr>
+      <td>Update genre mapping</td>
+      <td><code>MetaData/Music_Genres_unique.csv</code></td>
+      <td>Add rows: Subgenre, Primary Genre</td>
+    </tr>
+    <tr>
+      <td>Change search keywords</td>
+      <td><code>scripts/data_collection/config.py</code></td>
+      <td><code>KEYWORDS</code> array</td>
+    </tr>
+    <tr>
+      <td>Adjust validator speed</td>
+      <td><code>scripts/csv_processing/multiprocessing-spotify-validator.py</code></td>
+      <td><code>NUM_PROCESSES</code>, <code>SAVE_INTERVAL</code></td>
+    </tr>
+    <tr>
+      <td>Modify agent prompt</td>
+      <td><code>curator_enrichment/prompts.py</code></td>
+      <td><code>AGENT_PROMPT</code> template string</td>
+    </tr>
+  </table>
+  
+  <h2>Command Quick Reference</h2>
+  
+  <pre>
+# Full pipeline execution (manual steps)
+cd scripts/data_collection && python main.py
+cd ../csv_processing && python multiprocessing-spotify-validator.py
+cd ../../curator_playlists && python main.py
+cd ../curator_enrichment && python agent.py
+
+# Individual component testing
+python -m pytest tests/test_focus_score.py
+python curator_enrichment/agent.py  # Run for specific curator list
+python scripts/csv_processing/spotify_validator.py  # Single-threaded debug mode
+
+# Data inspection
+import pandas as pd
+df = pd.read_csv('data/Playlists.csv')
+df[df['musinique_focus_score'] > 85].head()  # High-quality playlists
+  </pre>
+  
+  <h2>Critical Metrics Checklist</h2>
+  
+  <table>
+    <tr>
+      <th>Metric</th>
+      <th>Current Status</th>
+      <th>Required For</th>
+    </tr>
+    <tr>
+      <td>Focus Score</td>
+      <td><span class="status-implemented">✓ Implemented</span></td>
+      <td>Genre coherence audit</td>
+    </tr>
+    <tr>
+      <td>Z-Score (Growth)</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Bot injection detection</td>
+    </tr>
+    <tr>
+      <td>Retention Score</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Payola pattern detection</td>
+    </tr>
+    <tr>
+      <td>FAL Resonance</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Algorithmic impact validation</td>
+    </tr>
+    <tr>
+      <td>Semantic Alignment</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Playlist stuffing detection</td>
+    </tr>
+    <tr>
+      <td>Ellipsoid Volume</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Sonic chaos quantification</td>
+    </tr>
+    <tr>
+      <td>SPS Milestones</td>
+      <td><span class="status-missing">✗ Missing</span></td>
+      <td>Algorithmic efficiency measurement</td>
+    </tr>
+  </table>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p><strong>MUSINIQUE PLATFORM - Internal Technical Documentation</strong></p>
+  <p>Version 1.0 | February 2026 | Musinique Engineering</p>
+  <p style="margin-top: 15px;">🔒 CONFIDENTIAL - Internal Use Only</p>
+  <p style="margin-top: 10px; font-style: italic;">"Humans make music. Bots check data."</p>
+  <p style="margin-top: 10px; font-size: 8pt;">
+    To save as PDF: Ctrl+P (Windows) / Cmd+P (Mac) → Save as PDF
+  </p>
+</footer>
+
+</body>
+</html>
